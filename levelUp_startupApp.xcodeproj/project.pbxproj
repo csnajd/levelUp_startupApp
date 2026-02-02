@@ -24,9 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		CD528BC42F29022C0088CF93 /* levelUp_startupApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = levelUp_startupApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CD528BD12F29022E0088CF93 /* levelUp_startupAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = levelUp_startupAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CD528BDB2F29022E0088CF93 /* levelUp_startupAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = levelUp_startupAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E38430A2F30E706003AA7DE /* levelUp_startupApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = levelUp_startupApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CD528BD12F29022E0088CF93 /* levelUp_startupAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = levelUp_startupAppTests.xctest; path = "/Users/danyahalbarqawi/Desktop/levelUp_startupApp/build/Debug-iphoneos/levelUp_startupApp.app/PlugIns/levelUp_startupAppTests.xctest"; sourceTree = "<absolute>"; };
+		CD528BDB2F29022E0088CF93 /* levelUp_startupAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = levelUp_startupAppUITests.xctest; path = "/Users/danyahalbarqawi/Desktop/levelUp_startupApp/build/Debug-iphoneos/levelUp_startupAppUITests-Runner.app/PlugIns/levelUp_startupAppUITests.xctest"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -78,18 +78,8 @@
 				CD528BC62F29022C0088CF93 /* levelUp_startupApp */,
 				CD528BD42F29022E0088CF93 /* levelUp_startupAppTests */,
 				CD528BDE2F29022E0088CF93 /* levelUp_startupAppUITests */,
-				CD528BC52F29022C0088CF93 /* Products */,
+				0E38430A2F30E706003AA7DE /* levelUp_startupApp.app */,
 			);
-			sourceTree = "<group>";
-		};
-		CD528BC52F29022C0088CF93 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				CD528BC42F29022C0088CF93 /* levelUp_startupApp.app */,
-				CD528BD12F29022E0088CF93 /* levelUp_startupAppTests.xctest */,
-				CD528BDB2F29022E0088CF93 /* levelUp_startupAppUITests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -114,7 +104,7 @@
 			packageProductDependencies = (
 			);
 			productName = levelUp_startupApp;
-			productReference = CD528BC42F29022C0088CF93 /* levelUp_startupApp.app */;
+			productReference = 0E38430A2F30E706003AA7DE /* levelUp_startupApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 		CD528BD02F29022E0088CF93 /* levelUp_startupAppTests */ = {
@@ -196,7 +186,7 @@
 			mainGroup = CD528BBB2F29022C0088CF93;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = CD528BC52F29022C0088CF93 /* Products */;
+			productRefGroup = CD528BBB2F29022C0088CF93;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -398,7 +388,7 @@
 				CODE_SIGN_ENTITLEMENTS = levelUp_startupApp/levelUp_startupApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6FWFT83RND;
+				DEVELOPMENT_TEAM = Z9HS98VCQK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -431,7 +421,7 @@
 				CODE_SIGN_ENTITLEMENTS = levelUp_startupApp/levelUp_startupApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6FWFT83RND;
+				DEVELOPMENT_TEAM = Z9HS98VCQK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
