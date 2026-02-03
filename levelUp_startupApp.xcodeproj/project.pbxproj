@@ -25,8 +25,8 @@
 
 /* Begin PBXFileReference section */
 		0E38430A2F30E706003AA7DE /* levelUp_startupApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = levelUp_startupApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CD528BD12F29022E0088CF93 /* levelUp_startupAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = levelUp_startupAppTests.xctest; path = "/Users/danyahalbarqawi/Desktop/levelUp_startupApp/build/Debug-iphoneos/levelUp_startupApp.app/PlugIns/levelUp_startupAppTests.xctest"; sourceTree = "<absolute>"; };
-		CD528BDB2F29022E0088CF93 /* levelUp_startupAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = levelUp_startupAppUITests.xctest; path = "/Users/danyahalbarqawi/Desktop/levelUp_startupApp/build/Debug-iphoneos/levelUp_startupAppUITests-Runner.app/PlugIns/levelUp_startupAppUITests.xctest"; sourceTree = "<absolute>"; };
+		0E3843322F30E792003AA7DE /* levelUp_startupAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = levelUp_startupAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E3843332F30E792003AA7DE /* levelUp_startupAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = levelUp_startupAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -79,6 +79,8 @@
 				CD528BD42F29022E0088CF93 /* levelUp_startupAppTests */,
 				CD528BDE2F29022E0088CF93 /* levelUp_startupAppUITests */,
 				0E38430A2F30E706003AA7DE /* levelUp_startupApp.app */,
+				0E3843322F30E792003AA7DE /* levelUp_startupAppTests.xctest */,
+				0E3843332F30E792003AA7DE /* levelUp_startupAppUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -127,7 +129,7 @@
 			packageProductDependencies = (
 			);
 			productName = levelUp_startupAppTests;
-			productReference = CD528BD12F29022E0088CF93 /* levelUp_startupAppTests.xctest */;
+			productReference = 0E3843322F30E792003AA7DE /* levelUp_startupAppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		CD528BDA2F29022E0088CF93 /* levelUp_startupAppUITests */ = {
@@ -150,7 +152,7 @@
 			packageProductDependencies = (
 			);
 			productName = levelUp_startupAppUITests;
-			productReference = CD528BDB2F29022E0088CF93 /* levelUp_startupAppUITests.xctest */;
+			productReference = 0E3843332F30E792003AA7DE /* levelUp_startupAppUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
