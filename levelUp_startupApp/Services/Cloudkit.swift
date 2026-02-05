@@ -5,6 +5,7 @@
 //  Created by Danyah ALbarqawi on 03/02/2026.
 //
 
+
 import Foundation
 import CloudKit
 
@@ -70,3 +71,4 @@ enum CloudKitSchema {
         static let createdAt = "createdAt"
     }
 }
+
