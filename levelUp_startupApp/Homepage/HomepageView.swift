@@ -73,3 +73,6 @@ struct HomepageView: View {
         }
     }
 }
+#Preview {
+    HomepageView()
+}

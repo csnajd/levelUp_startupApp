@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import CloudKit
+import SwiftUI
 
 @MainActor
 final class HomepageViewModel: ObservableObject {
@@ -101,4 +102,8 @@ final class HomepageViewModel: ObservableObject {
         }
         return error.localizedDescription
     }
+}
+
+#Preview {
+    HomepageView()
 }
