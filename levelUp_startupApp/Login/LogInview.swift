@@ -29,7 +29,7 @@ struct WelcomeView: View {
 
                 Text("Welcome!")
                     .font(.system(size: 40, weight: .bold))
-                    .foregroundStyle(.blue)
+                    .foregroundColor(Color("primary"))
 
                 SignInWithAppleButton(.signIn) { request in
                     vm.configureAppleRequest(request)
