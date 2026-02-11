@@ -22,8 +22,8 @@
 import Foundation
 import CloudKit
 
-class CloudKitService {
-    static let shared = CloudKitService()
+class CloudKitServices {
+    static let shared = CloudKitServices()
     
     private let container: CKContainer
     private let publicDatabase: CKDatabase

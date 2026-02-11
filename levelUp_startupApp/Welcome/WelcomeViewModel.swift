@@ -29,7 +29,7 @@ class WelcomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private let cloudKitService = CloudKitService.shared
+    private let scloudKitService = CloudKitServices.shared
     
     init() {
         Task {
@@ -42,8 +42,11 @@ class WelcomeViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            userCommunities = try await cloudKitService.fetchUserCommunities()
+        
+        userCommunities = try await CloudKitService.fetchUserCommunities()
+           
             isLoading = false
+        
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false

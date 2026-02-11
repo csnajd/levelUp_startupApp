@@ -1,6 +1,6 @@
 import Foundation
 import AuthenticationServices
-import Combine
+internal import Combine
 import CloudKit
 
 @MainActor
