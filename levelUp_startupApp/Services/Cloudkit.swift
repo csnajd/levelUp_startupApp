@@ -1,75 +1,58 @@
-//
-//  Cloudkit.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 03/02/2026.
-//
-
-/*
 import Foundation
 import CloudKit
 
 final class CloudKitService {
-    static let shared = CloudKitService()
 
-    private init() {}
+    private let container: CKContainer
+    private let database: CKDatabase
 
-    private let container = CKContainer.default()
-    private var db: CKDatabase { container.publicCloudDatabase } // public مثل كودك
-
-    // MARK: - Project
-
-    func fetchProjects(completion: @escaping (Result<[HomepageProject], Error>) -> Void) {
-        let query = CKQuery(recordType: CloudKitSchema.RecordType.project,
-                            predicate: NSPredicate(value: true))
-        query.sortDescriptors = [NSSortDescriptor(key: CloudKitSchema.Field.createdAt, ascending: false)]
-
-        db.perform(query, inZoneWith: nil) { records, error in
-            if let error {
-                completion(.failure(error))
-                return
-            }
-
-            let items = (records ?? []).map { HomepageProject(record: $0) }
-            completion(.success(items))
+    // usePublicDB = true عشان iCloud Storage Full عندك (Public ما يتوقف بسبب مساحة حسابك)
+    init(containerID: String? = nil, usePublicDB: Bool = true) {
+        if let id = containerID {
+            self.container = CKContainer(identifier: id)
+        } else {
+            self.container = CKContainer.default()
         }
+        self.database = usePublicDB ? container.publicCloudDatabase : container.privateCloudDatabase
     }
 
-    func createProject(title: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let record = CKRecord(recordType: CloudKitSchema.RecordType.project)
-        record[CloudKitSchema.Field.title] = title as CKRecordValue
-        record[CloudKitSchema.Field.createdAt] = Date() as CKRecordValue
+    // Upsert by recordName = appleUserID
+    func upsertUserProfile(
+        appleUserID: String,
+        email: String?,
+        givenName: String?,
+        familyName: String?
+    ) async throws {
 
-        db.save(record) { _, error in
-            if let error {
-                completion(.failure(error))
-                return
+        let recordID = CKRecord.ID(recordName: appleUserID)
+
+        let record: CKRecord
+        do {
+            record = try await database.record(for: recordID)
+        } catch let error as CKError {
+            if error.code == .unknownItem {
+                record = CKRecord(recordType: "UserProfile", recordID: recordID)
+                record["createdAt"] = Date() as CKRecordValue
+                record["appleUserID"] = appleUserID as CKRecordValue
+            } else {
+                throw error
             }
-            completion(.success(()))
         }
+
+        if let email, !email.isEmpty { record["email"] = email as CKRecordValue }
+        if let givenName, !givenName.isEmpty { record["givenName"] = givenName as CKRecordValue }
+        if let familyName, !familyName.isEmpty { record["familyName"] = familyName as CKRecordValue }
+
+        record["lastLogin"] = Date() as CKRecordValue
+
+        let saved = try await database.save(record)
+        print("✅ CloudKit saved:", saved.recordType, saved.recordID.recordName)
     }
 
-    func deleteProject(id: CKRecord.ID, completion: @escaping (Result<Void, Error>) -> Void) {
-        db.delete(withRecordID: id) { _, error in
-            if let error {
-                completion(.failure(error))
-                return
-            }
-            completion(.success(()))
-        }
+    func fetchUserProfile(appleUserID: String) async throws -> CKRecord {
+        let recordID = CKRecord.ID(recordName: appleUserID)
+        let fetched = try await database.record(for: recordID)
+        print("✅ CloudKit fetched:", fetched.recordType, fetched.recordID.recordName)
+        return fetched
     }
 }
-
-// MARK: - CloudKit Schema Names
-enum CloudKitSchema {
-    enum RecordType {
-        static let project = "project"  // انتبهي: نفس اللي في CloudKit Console
-    }
-
-    enum Field {
-        static let title = "title"
-        static let createdAt = "createdAt"
-    }
-}
-
-*/

@@ -1,27 +1,22 @@
-//
-//  LogInViewModel.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 05/02/2026.
-//
-
 import Foundation
 import AuthenticationServices
-internal import Combine
+import Combine
+import CloudKit
 
 @MainActor
-class WelcomeViewModel: ObservableObject {
+class LogInViewModel: ObservableObject {
 
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
-    // MARK: - Configure Apple Request
+    // ✅ Public عشان iCloud عندك ممتلئ (إذا فضّيتي iCloud بدّليها false)
+    private let cloud = CloudKitService(containerID: nil, usePublicDB: true)
+
     func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         request.requestedScopes = [.fullName, .email]
     }
 
-    // MARK: - Handle Apple Result
-    func handleAppleResult(_ result: Result<ASAuthorization, Error>) {
+    func handleAppleResult(_ result: Result<ASAuthorization, Error>, session: AppSession) {
         isLoading = true
         errorMessage = nil
 
@@ -31,33 +26,52 @@ class WelcomeViewModel: ObservableObject {
                 fail(with: "Invalid Apple credential")
                 return
             }
-
-            handleAppleCredential(credential)
+            Task { await handleAppleCredential(credential, session: session) }
 
         case .failure(let error):
             fail(with: error.localizedDescription)
         }
     }
 
-    // MARK: - Process Credential
-    private func handleAppleCredential(_ credential: ASAuthorizationAppleIDCredential) {
+    private func handleAppleCredential(_ credential: ASAuthorizationAppleIDCredential, session: AppSession) async {
 
         let userID = credential.user
         let email = credential.email
-        let fullName = credential.fullName
+        let givenName = credential.fullName?.givenName
+        let familyName = credential.fullName?.familyName
 
-        // 👇 For now we just simulate success
-        // Later: send these to Firebase / backend
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            print("Apple User ID:", userID)
-            print("Email:", email ?? "No email")
-            print("Name:", fullName?.givenName ?? "No name")
+        do {
+            // 1) Save/Update in CloudKit
+            try await cloud.upsertUserProfile(
+                appleUserID: userID,
+                email: email,
+                givenName: givenName,
+                familyName: familyName
+            )
 
-            self.isLoading = false
+            // 2) Fetch to confirm + fill session
+            let record = try await cloud.fetchUserProfile(appleUserID: userID)
+
+            session.saveUserID(userID)
+            session.givenName = (record["givenName"] as? String) ?? (givenName ?? "")
+            session.familyName = (record["familyName"] as? String) ?? (familyName ?? "")
+            session.email = (record["email"] as? String) ?? (email ?? "")
+
+            isLoading = false
+
+        } catch {
+            // إذا فشل CloudKit، على الأقل لا يوقف اللوقين
+            print("❌ CloudKit failed:", error.localizedDescription)
+
+            session.saveUserID(userID)
+            session.givenName = givenName ?? ""
+            session.familyName = familyName ?? ""
+            session.email = email ?? ""
+
+            isLoading = false
         }
     }
 
-    // MARK: - Error helper
     private func fail(with message: String) {
         isLoading = false
         errorMessage = message

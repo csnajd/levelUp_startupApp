@@ -1,16 +1,10 @@
-//
-//  LogInview.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 05/02/2026.
-//
-
 import SwiftUI
 import AuthenticationServices
 
-struct WelcomeView: View {
+struct LogInView: View {
 
-    @StateObject private var vm = WelcomeViewModel()
+    @StateObject private var vm = LogInViewModel()
+    @EnvironmentObject var session: AppSession
 
     var body: some View {
         ZStack {
@@ -18,7 +12,6 @@ struct WelcomeView: View {
 
             VStack(spacing: 24) {
                 Spacer()
-                
 
                 // تقدر تحطين الصورة هنا (Image من Assets)
                 Image("image1") // حطي اسمها في Assets
@@ -34,7 +27,7 @@ struct WelcomeView: View {
                 SignInWithAppleButton(.signIn) { request in
                     vm.configureAppleRequest(request)
                 } onCompletion: { result in
-                    vm.handleAppleResult(result)
+                    vm.handleAppleResult(result, session: session)
                 }
                 .signInWithAppleButtonStyle(.black)
                 .frame(height: 52)
@@ -52,11 +45,18 @@ struct WelcomeView: View {
                         .padding(.horizontal, 24)
                 }
 
+                // ✅ تأكيد بسيط (مو شرط، بس يساعدك تتأكدين اللوقين)
+                Text(session.isSignedIn ? "✅ Logged in" : "")
+                    .font(.footnote)
+                    .foregroundStyle(.green)
+
                 Spacer()
             }
         }
     }
 }
+
 #Preview {
-    WelcomeView()
+    LogInView()
+        .environmentObject(AppSession())
 }
