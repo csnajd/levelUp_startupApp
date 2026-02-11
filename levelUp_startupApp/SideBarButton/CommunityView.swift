@@ -11,11 +11,12 @@ import SwiftUI
 struct CommunityView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = CommunityViewModel()
+    @State private var showAddMember = false
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Header
+                // Header with Back and Add Button
                 HStack {
                     Button(action: {
                         dismiss()
@@ -26,6 +27,18 @@ struct CommunityView: View {
                     }
                     
                     Spacer()
+                    
+                    // Add Member Button
+                    Button(action: {
+                        showAddMember = true
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 40, height: 40)
+                            .background(Color("primary"))
+                            .clipShape(Circle())
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
@@ -107,6 +120,9 @@ struct CommunityView: View {
             .task {
                 await viewModel.loadMembers()
             }
+            .sheet(isPresented: $showAddMember) {
+                AddMemberView()
+            }
         }
     }
 }
@@ -154,6 +170,74 @@ struct MemberCard: View {
             RoundedRectangle(cornerRadius: 28)
                 .stroke(Color("primary"), lineWidth: 2)
         )
+    }
+}
+
+// Add Member View (Placeholder)
+struct AddMemberView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var inviteCode = ""
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                Text("Add Member")
+                    .font(.system(size: 28, weight: .bold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 40)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Share Invite Code")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.black)
+                    
+                    HStack {
+                        Text("ABC123XY")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(Color("primary"))
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            // Copy invite code
+                            UIPasteboard.general.string = "ABC123XY"
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "doc.on.doc")
+                                Text("Copy")
+                            }
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color("primary"))
+                            .cornerRadius(16)
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal, 24)
+                
+                Text("Share this code with people you want to add to your community")
+                    .font(.system(size: 14))
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 24)
+                
+                Spacer()
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color("primary"))
+                }
+            }
+        }
     }
 }
 

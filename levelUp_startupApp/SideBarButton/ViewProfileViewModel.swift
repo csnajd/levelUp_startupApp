@@ -1,3 +1,11 @@
+//
+//  ViewProfileViewModel.swift
+//  levelUp_startupApp
+//
+//  Created by Ghala Alsalem on 10/02/2026.
+//
+
+
 import Foundation
 import SwiftUI
 import PhotosUI
@@ -5,7 +13,7 @@ import CloudKit
 internal import Combine
 
 @MainActor
-class ViewProfileViewModel: ObservableObject {
+class EditProfileViewModel: ObservableObject {  // ✅ RENAMED to EditProfileViewModel
     @Published var givenName = ""
     @Published var familyName = ""
     @Published var gender: Gender = .preferNotToSay
@@ -20,7 +28,7 @@ class ViewProfileViewModel: ObservableObject {
     private let cloudKitService = Cloudkit.shared
     
     var isSaveButtonEnabled: Bool {
-        true  // ✅ Always allow saving when editing existing profile
+        true
     }
     
     func saveProfile() async {

@@ -10,7 +10,9 @@ import SwiftUI
 struct levelUp_startupAppApp: App {
     var body: some Scene {
         WindowGroup {
-//            HomepageView()
+            NavigationStack {
+                HomepageView()  // ✅ Change this temporarily to test
+            }
         }
     }
 }

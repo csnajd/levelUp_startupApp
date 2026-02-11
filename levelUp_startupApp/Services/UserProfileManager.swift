@@ -1,6 +1,15 @@
+//
+//  UserProfileManager.swift
+//  levelUp_startupApp
+//
+//  Created by Ghala Alsalem on 10/02/2026.
+//
+
+
 import Foundation
 import SwiftUI
 import CloudKit
+internal import Combine
 
 @MainActor
 class UserProfileManager: ObservableObject {

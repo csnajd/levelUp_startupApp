@@ -1,10 +1,18 @@
+//
+//  ViewProfilePage.swift
+//  levelUp_startupApp
+//
+//  Created by Ghala Alsalem on 10/02/2026.
+//
+
+
 import SwiftUI
 import PhotosUI
 
 struct ViewProfilePage: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = ViewProfileViewModel()
-    @State private var isEditMode = false  // ✅ STARTS IN VIEW MODE
+    @StateObject private var viewModel = EditProfileViewModel()
+    @State private var isEditMode = false
     @State private var showGenderPicker = false
     @State private var selectedItem: PhotosPickerItem?
     
@@ -30,7 +38,6 @@ struct ViewProfilePage: View {
                             )
                     }
                     
-                    // ONLY show Edit Photo when in edit mode
                     if isEditMode {
                         PhotosPicker(selection: $selectedItem, matching: .images) {
                             Text("Edit Photo")
@@ -41,20 +48,18 @@ struct ViewProfilePage: View {
                 }
                 .padding(.top, 40)
                 
-                // First Name - READ ONLY or EDITABLE
+                // First Name
                 VStack(alignment: .leading, spacing: 8) {
                     Text("First name")
                         .font(.system(size: 14, weight: .medium))
                     
                     if isEditMode {
-                        // EDIT MODE - TextField
                         TextField("First name", text: $viewModel.givenName)
                             .padding()
                             .background(Color(.systemGray6))
                             .cornerRadius(25)
                             .font(.system(size: 16))
                     } else {
-                        // VIEW MODE - Just text
                         HStack {
                             Text(viewModel.givenName.isEmpty ? "Not set" : viewModel.givenName)
                                 .font(.system(size: 16))
@@ -68,7 +73,7 @@ struct ViewProfilePage: View {
                 }
                 .padding(.horizontal, 24)
                 
-                // Last Name - READ ONLY or EDITABLE
+                // Last Name
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Last name")
                         .font(.system(size: 14, weight: .medium))
@@ -93,7 +98,7 @@ struct ViewProfilePage: View {
                 }
                 .padding(.horizontal, 24)
                 
-                // Email - READ ONLY or EDITABLE
+                // Email
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Email")
                         .font(.system(size: 14, weight: .medium))
@@ -120,7 +125,7 @@ struct ViewProfilePage: View {
                 }
                 .padding(.horizontal, 24)
                 
-                // Phone Number - READ ONLY or EDITABLE
+                // Phone Number
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Phone number")
                         .font(.system(size: 14, weight: .medium))
@@ -146,7 +151,7 @@ struct ViewProfilePage: View {
                 }
                 .padding(.horizontal, 24)
                 
-                // Gender - READ ONLY or EDITABLE
+                // Gender
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Gender")
                         .font(.system(size: 14, weight: .medium))
@@ -195,31 +200,31 @@ struct ViewProfilePage: View {
                         .padding(.horizontal, 24)
                 }
                 
-                // Save Button - ONLY VISIBLE IN EDIT MODE
+                // Save Button - ALWAYS ENABLED IN EDIT MODE
                 if isEditMode {
                     Button(action: {
                         Task {
                             await viewModel.saveProfile()
                             if viewModel.savedSuccessfully {
                                 await UserProfileManager.shared.loadProfile()
-                                isEditMode = false  // Switch back to view mode
+                                dismiss()  // ✅ CHANGED - Dismisses the entire page
                             }
                         }
                     }) {
                         if viewModel.isLoading {
                             ProgressView()
-                                .tint(Color("primary"))
+                                .tint(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(Color(.systemGray6))
+                                .background(Color("primary"))
                                 .cornerRadius(28)
                         } else {
                             Text("save")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(Color(.systemGray6))
+                                .background(Color("primary"))
                                 .cornerRadius(28)
                         }
                     }
@@ -229,21 +234,11 @@ struct ViewProfilePage: View {
             }
         }
         .background(Color.white)
-        .navigationTitle(isEditMode ? "Edit Profile" : "Profile")  // ✅ Title changes
+        .navigationTitle(isEditMode ? "Edit Profile" : "Profile")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    dismiss()
-                }) {
-                    Image(systemName: "arrow.left")
-                        .foregroundColor(.black)
-                }
-            }
-            
             ToolbarItem(placement: .navigationBarTrailing) {
                 if isEditMode {
-                    // When editing - show Cancel button
                     Button("Cancel") {
                         isEditMode = false
                         Task {
@@ -252,7 +247,6 @@ struct ViewProfilePage: View {
                     }
                     .foregroundColor(Color("primary"))
                 } else {
-                    // When viewing - show Edit button
                     Button("Edit") {
                         isEditMode = true
                     }
