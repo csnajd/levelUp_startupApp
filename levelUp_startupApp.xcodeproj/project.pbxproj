@@ -24,6 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0E3501A02F3B594900703AE5 /* AppCordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCordinator.swift; sourceTree = "<group>"; };
 		0E38430A2F30E706003AA7DE /* levelUp_startupApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = levelUp_startupApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E3843322F30E792003AA7DE /* levelUp_startupAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = levelUp_startupAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E3843332F30E792003AA7DE /* levelUp_startupAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = levelUp_startupAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +76,7 @@
 		CD528BBB2F29022C0088CF93 = {
 			isa = PBXGroup;
 			children = (
+				0E3501A02F3B594900703AE5 /* AppCordinator.swift */,
 				CD528BC62F29022C0088CF93 /* levelUp_startupApp */,
 				CD528BD42F29022E0088CF93 /* levelUp_startupAppTests */,
 				CD528BDE2F29022E0088CF93 /* levelUp_startupAppUITests */,

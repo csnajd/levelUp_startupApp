@@ -8,9 +8,9 @@
 import SwiftUI
 import AuthenticationServices
 
-struct WelcomeView: View {
+struct LogInView: View {
 
-    @StateObject private var vm = WelcomeViewModel()
+    @StateObject private var vm = LogInViewModel()
 
     var body: some View {
         ZStack {

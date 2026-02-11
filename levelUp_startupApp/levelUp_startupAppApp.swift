@@ -10,7 +10,7 @@ import SwiftUI
 struct levelUp_startupAppApp: App {
     var body: some Scene {
         WindowGroup {
-//            HomepageView()
+           WelcomeView()
         }
     }
 }

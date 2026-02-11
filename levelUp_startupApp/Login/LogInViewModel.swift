@@ -10,7 +10,7 @@ import AuthenticationServices
 internal import Combine
 
 @MainActor
-class WelcomeViewModel: ObservableObject {
+class LogInViewModel: ObservableObject {
 
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
