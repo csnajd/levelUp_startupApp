@@ -40,7 +40,7 @@ class CreateCommunityViewModel: ObservableObject {
     @Published var createdCommunity: Community?
     @Published var errorMessage: String?
     
-    private let scloudKitService = CloudKitServices.shared
+    private let cloudKitService = CloudKitServices.shared
     
     func createCommunitySync() {
         Task {
@@ -53,7 +53,7 @@ class CreateCommunityViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            guard let userID = try await scloudKitService.getCurrentUserID() else {
+            guard let userID = try await cloudKitService.getCurrentUserID() else {
                 throw NSError(domain: "CreateCommunity", code: -1, userInfo: [NSLocalizedDescriptionKey: "Could not get user ID"])
             }
             
@@ -77,7 +77,7 @@ class CreateCommunityViewModel: ObservableObject {
                 adminIDs: [userID]
             )
             
-            let savedCommunity = try await scloudKitService.saveCommunity(community)
+            let savedCommunity = try await cloudKitService.saveCommunity(community)
             
             inviteCode = savedCommunity.inviteCode
             inviteLink = "levelup://join/\(savedCommunity.inviteCode)"

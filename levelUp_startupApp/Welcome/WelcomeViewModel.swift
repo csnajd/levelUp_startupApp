@@ -5,23 +5,15 @@
 //  Created by Danyah ALbarqawi on 10/02/2026.
 //
 
-//
-//  WelcomeViewModel.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-10
-//
 
-//
-//  WelcomeViewModel.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-11
-//
 
 import Foundation
 import CloudKit
 internal import Combine
+
+
+import Foundation
+import CloudKit
 
 @MainActor
 class WelcomeViewModel: ObservableObject {
@@ -29,7 +21,7 @@ class WelcomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private let scloudKitService = CloudKitServices.shared
+    private let cloudKitService = CloudKitServices.shared
     
     init() {
         Task {
@@ -42,11 +34,8 @@ class WelcomeViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-        
-        userCommunities = try await CloudKitService.fetchUserCommunities()
-           
+            userCommunities = try await cloudKitService.fetchUserCommunities()
             isLoading = false
-        
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
