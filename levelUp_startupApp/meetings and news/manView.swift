@@ -76,7 +76,7 @@ struct manView: View {
                                     .padding(.horizontal, 20)
                                     
                                     ForEach(viewModel.todayMeetings) { meeting in
-                                        MeetingCard(meeting: meeting)
+                                        MeetingCard(meeting: meeting, viewModel: viewModel)
                                             .padding(.horizontal, 20)
                                     }
                                 }
@@ -97,7 +97,7 @@ struct manView: View {
                                     .padding(.horizontal, 20)
                                     
                                     ForEach(viewModel.upcomingMeetings) { meeting in
-                                        MeetingCard(meeting: meeting)
+                                        MeetingCard(meeting: meeting, viewModel: viewModel)
                                             .padding(.horizontal, 20)
                                     }
                                 }
@@ -141,6 +141,7 @@ struct manView: View {
 // Meeting Card - WITH ATTENDEES BUTTON
 struct MeetingCard: View {
     let meeting: Meeting
+    let viewModel: manViewModel
     @State private var showMeetingOptions = false
     @State private var showEditSheet = false
     @State private var showAttendeesSheet = false
@@ -268,7 +269,7 @@ struct MeetingCard: View {
             Button("Close", role: .cancel) {}
         }
         .sheet(isPresented: $showEditSheet) {
-            EditMeetingSheet(meeting: meeting, editType: editType)
+            EditMeetingSheet(meeting: meeting, editType: editType, viewModel: viewModel)
         }
         .sheet(isPresented: $showAttendeesSheet) {
             AttendeesListSheet(meeting: meeting)
@@ -286,8 +287,7 @@ struct MeetingCard: View {
     }
     
     private func cancelMeeting() {
-        // TODO: Delete meeting from CloudKit
-        print("Canceling meeting: \(meeting.name)")
+        viewModel.deleteMeeting(meeting.id.uuidString)
     }
 }
 
@@ -296,6 +296,7 @@ struct EditMeetingSheet: View {
     @Environment(\.dismiss) private var dismiss
     let meeting: Meeting
     let editType: MeetingCard.EditType
+    let viewModel: manViewModel
     
     @State private var editedName = ""
     @State private var editedDate = Date()
@@ -505,8 +506,20 @@ struct EditMeetingSheet: View {
     }
     
     private func saveMeeting() {
-        // TODO: Update meeting in CloudKit
-        print("Saving changes to meeting: \(meeting.name)")
+        let updatedMeeting = Meeting(
+            id: meeting.id,
+            name: editedName.isEmpty ? meeting.name : editedName,
+            projectID: meeting.projectID,
+            projectName: meeting.projectName,
+            attendeeIDs: selectedAttendees.isEmpty ? meeting.attendeeIDs : selectedAttendees,
+            dateTime: editedDate,
+            platform: editedPlatform.isEmpty ? meeting.platform : editedPlatform,
+            link: editedLink.isEmpty ? meeting.link : editedLink,
+            communityID: meeting.communityID,
+            createdAt: meeting.createdAt
+        )
+        
+        viewModel.updateMeeting(updatedMeeting)  // ✅ Call update
         dismiss()
     }
 }

@@ -272,13 +272,13 @@ struct CreateMeetingView: View {
     func createMeeting() {
         let meeting = Meeting(
             name: meetingName,
-            projectID: "project1",
+            projectID: "project1", // TODO: Get actual project ID from your project picker
             projectName: selectedProject,
             attendeeIDs: selectedAttendees,
             dateTime: selectedDate,
             platform: platform,
             link: link,
-            communityID: "community1",
+            communityID: "community1", // TODO: Get actual community ID from your app state
             createdAt: Date()
         )
         

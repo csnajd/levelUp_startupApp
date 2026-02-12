@@ -8,11 +8,10 @@
 import Foundation
 internal import Combine
 
-
 @MainActor
 class HomepageViewModel: ObservableObject {
     @Published var projects: [Project] = []
-    @Published var communityName = "My Community"
+    @Published var communityName = "Code Lab"  // Changed from "My Community" to "Code Lab"
     @Published var showBlockedProjects = false
     @Published var isLoadingProjects = false
     @Published var selectedCommunity: Community?
@@ -57,7 +56,6 @@ class HomepageViewModel: ObservableObject {
         communityName = community.name
         loadProjects()
     }
-    
     
     var activeProjects: [Project] {
         projects.filter { !$0.isBlocked }

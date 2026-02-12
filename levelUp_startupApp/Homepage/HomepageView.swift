@@ -43,7 +43,7 @@ struct HomepageView: View {
                     .background(Color.white)
                     
                     ScrollView {
-                        VStack(spacing: 20) {  // ✅ Changed from 16 to 20
+                        VStack(spacing: 20) {  // Changed from 16 to 20
                             // Create Project Button
                             Button(action: {
                                 // Navigate to create project
@@ -69,7 +69,7 @@ struct HomepageView: View {
                                 )
                             }
                             .padding(.horizontal, 20)
-                            .padding(.top, 20)  // ✅ Added top padding
+                            .padding(.top, 20)  // Changed from 16 to 20
                             
                             // Active Projects Section
                             if viewModel.hasActiveProjects {
@@ -131,7 +131,7 @@ struct HomepageView: View {
                                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                                         )
                                         .padding(.horizontal, 20)
-                                        .padding(.top, 8)  // ✅ Changed from 4 to 8
+                                        .padding(.top, 8)  // Changed from 4 to 8
                                     } else {
                                         VStack(spacing: 8) {
                                             Text("No pending tasks")
@@ -151,7 +151,7 @@ struct HomepageView: View {
                                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                                         )
                                         .padding(.horizontal, 20)
-                                        .padding(.top, 8)  // ✅ Changed from 4 to 8
+                                        .padding(.top, 8)  // Changed from 4 to 8
                                     }
                                 }
                             }
@@ -341,6 +341,35 @@ struct SideMenuView: View {
             .task {
                 await userProfile.loadProfile()
             }
+        }
+    }
+}
+
+// Menu Item Button (kept from hers, but not used in SideMenuView)
+struct MenuItemButton: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    var titleColor: Color = .black
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                Image(systemName: icon)
+                    .font(.system(size: 22))
+                    .foregroundColor(iconColor)
+                    .frame(width: 30)
+                
+                Text(title)
+                    .font(.system(size: 18))
+                    .foregroundColor(titleColor)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .background(Color.clear)
         }
     }
 }

@@ -53,4 +53,101 @@ class Cloudkit {
         
         return nil
     }
+    
+    // MARK: - Meeting Operations
+    
+    func saveMeeting(_ meeting: Meeting) async throws -> Meeting {
+        let record = meeting.toCKRecord()
+        let savedRecord = try await publicDatabase.save(record)
+        
+        guard let savedMeeting = Meeting(from: savedRecord) else {
+            throw NSError(domain: "Cloudkit", code: -1,
+                         userInfo: [NSLocalizedDescriptionKey: "Failed to create meeting from saved record"])
+        }
+        
+        return savedMeeting
+    }
+    
+    func fetchCommunityMeetings(communityID: String) async throws -> [Meeting] {
+        let predicate = NSPredicate(format: "communityID == %@", communityID)
+        let query = CKQuery(recordType: "Meeting", predicate: predicate)
+        query.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
+        
+        let (results, _) = try await publicDatabase.records(matching: query)
+        
+        var meetings: [Meeting] = []
+        for (_, result) in results {
+            switch result {
+            case .success(let record):
+                if let meeting = Meeting(from: record) {
+                    meetings.append(meeting)
+                }
+            case .failure(let error):
+                print("Error fetching meeting: \(error)")
+            }
+        }
+        
+        return meetings
+    }
+    
+    func fetchProjectMeetings(projectID: String) async throws -> [Meeting] {
+        let predicate = NSPredicate(format: "projectID == %@", projectID)
+        let query = CKQuery(recordType: "Meeting", predicate: predicate)
+        query.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
+        
+        let (results, _) = try await publicDatabase.records(matching: query)
+        
+        var meetings: [Meeting] = []
+        for (_, result) in results {
+            switch result {
+            case .success(let record):
+                if let meeting = Meeting(from: record) {
+                    meetings.append(meeting)
+                }
+            case .failure(let error):
+                print("Error fetching meeting: \(error)")
+            }
+        }
+        
+        return meetings
+    }
+    
+    func fetchUserMeetings(userID: String) async throws -> [Meeting] {
+        let predicate = NSPredicate(format: "attendeeIDs CONTAINS %@", userID)
+        let query = CKQuery(recordType: "Meeting", predicate: predicate)
+        query.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
+        
+        let (results, _) = try await publicDatabase.records(matching: query)
+        
+        var meetings: [Meeting] = []
+        for (_, result) in results {
+            switch result {
+            case .success(let record):
+                if let meeting = Meeting(from: record) {
+                    meetings.append(meeting)
+                }
+            case .failure(let error):
+                print("Error fetching meeting: \(error)")
+            }
+        }
+        
+        return meetings
+    }
+    
+    func updateMeeting(_ meeting: Meeting) async throws -> Meeting {
+        let record = meeting.toCKRecord()
+        let savedRecord = try await publicDatabase.save(record)
+        
+        guard let updatedMeeting = Meeting(from: savedRecord) else {
+            throw NSError(domain: "Cloudkit", code: -1,
+                         userInfo: [NSLocalizedDescriptionKey: "Failed to create meeting from saved record"])
+        }
+        
+        return updatedMeeting
+    }
+    
+    func deleteMeeting(_ meetingID: String) async throws {
+        let recordID = CKRecord.ID(recordName: meetingID)
+        try await publicDatabase.deleteRecord(withID: recordID)
+    }
 }
