@@ -38,16 +38,16 @@ struct SettingsView: View {
                 
                 // Settings Options
                 VStack(spacing: 16) {
-                    SettingsButton(icon: "bell.fill", title: "Notifications") {
-                        // Navigate to notifications settings
+                    NavigationLink(destination: NotificationsSettingsView()) {
+                        SettingsButton(icon: "bell.fill", title: "Notifications")
                     }
                     
-                    SettingsButton(icon: "lock.fill", title: "Privacy") {
-                        // Navigate to privacy settings
+                    NavigationLink(destination: PrivacySettingsView()) {
+                        SettingsButton(icon: "lock.fill", title: "Privacy")
                     }
                     
-                    SettingsButton(icon: "rectangle.fill.on.rectangle.fill", title: "Appearance") {
-                        // Navigate to appearance settings
+                    NavigationLink(destination: AppearanceSettingsView()) {
+                        SettingsButton(icon: "rectangle.fill.on.rectangle.fill", title: "Appearance")
                     }
                 }
                 .padding(.horizontal, 20)
@@ -63,30 +63,31 @@ struct SettingsView: View {
 struct SettingsButton: View {
     let icon: String
     let title: String
-    let action: () -> Void
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .foregroundColor(Color("primary"))
-                    .frame(width: 30)
-                
-                Text(title)
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundColor(Color("primary"))
-                
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 20)
-            .background(Color.white)
-            .overlay(
-                RoundedRectangle(cornerRadius: 28)
-                    .stroke(Color("primary"), lineWidth: 2)
-            )
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.system(size: 22))
+                .foregroundColor(Color("primary"))
+                .frame(width: 30)
+            
+            Text(title)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(Color("primary"))
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14))
+                .foregroundColor(.gray)
         }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 20)
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 28)
+                .stroke(Color("primary"), lineWidth: 2)
+        )
     }
 }
 

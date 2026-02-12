@@ -43,7 +43,7 @@ struct HomepageView: View {
                     .background(Color.white)
                     
                     ScrollView {
-                        VStack(spacing: 16) {
+                        VStack(spacing: 20) {  // ✅ Changed from 16 to 20
                             // Create Project Button
                             Button(action: {
                                 // Navigate to create project
@@ -69,7 +69,7 @@ struct HomepageView: View {
                                 )
                             }
                             .padding(.horizontal, 20)
-                            .padding(.top, 16)
+                            .padding(.top, 20)  // ✅ Added top padding
                             
                             // Active Projects Section
                             if viewModel.hasActiveProjects {
@@ -131,7 +131,7 @@ struct HomepageView: View {
                                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                                         )
                                         .padding(.horizontal, 20)
-                                        .padding(.top, 4)
+                                        .padding(.top, 8)  // ✅ Changed from 4 to 8
                                     } else {
                                         VStack(spacing: 8) {
                                             Text("No pending tasks")
@@ -151,7 +151,7 @@ struct HomepageView: View {
                                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                                         )
                                         .padding(.horizontal, 20)
-                                        .padding(.top, 4)
+                                        .padding(.top, 8)  // ✅ Changed from 4 to 8
                                     }
                                 }
                             }
@@ -201,9 +201,6 @@ struct HomepageView: View {
 }
 
 // Side Menu View
-// Side Menu View - WITH CLOUDKIT DATA
-// Side Menu View
-// Side Menu View
 struct SideMenuView: View {
     @Binding var isShowing: Bool
     @ObservedObject var userProfile = UserProfileManager.shared
@@ -251,7 +248,7 @@ struct SideMenuView: View {
                 
                 // Menu Items
                 VStack(spacing: 0) {
-                    NavigationLink(destination: ViewProfilePage()) {  // Use the original profileview
+                    NavigationLink(destination: ViewProfilePage()) {
                         HStack(spacing: 16) {
                             Image(systemName: "person.fill")
                                 .font(.system(size: 22))
@@ -315,7 +312,6 @@ struct SideMenuView: View {
                         .padding(.leading, 60)
                     
                     Button(action: {
-                        // Log out action
                         isShowing = false
                     }) {
                         HStack(spacing: 16) {
@@ -349,37 +345,7 @@ struct SideMenuView: View {
     }
 }
 
-// Menu Item Button
-struct MenuItemButton: View {
-    let icon: String
-    let iconColor: Color
-    let title: String
-    var titleColor: Color = .black
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .foregroundColor(iconColor)
-                    .frame(width: 30)
-                
-                Text(title)
-                    .font(.system(size: 18))
-                    .foregroundColor(titleColor)
-                
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
-            .background(Color.clear)
-        }
-    }
-}
-
-// Empty Project Card Placeholder
-// Empty Project Card Placeholder - SIMPLIFIED
+// Empty Project Card
 struct EmptyProjectCard: View {
     var body: some View {
         HStack {
@@ -396,7 +362,8 @@ struct EmptyProjectCard: View {
         )
     }
 }
-// Project Card Component
+
+// Project Card
 struct ProjectCard: View {
     let project: Project
     

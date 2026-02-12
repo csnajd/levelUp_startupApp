@@ -9,8 +9,8 @@ class LogInViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
-    // ✅ Public عشان iCloud عندك ممتلئ (إذا فضّيتي iCloud بدّليها false)
-    private let cloud = CloudKitService(containerID: nil, usePublicDB: true)
+    // ✅ FIXED - Changed CloudKitService to CloudKitServices
+    private let cloud = CloudKitServices.shared  // Use the singleton
 
     func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         request.requestedScopes = [.fullName, .email]
@@ -40,36 +40,22 @@ class LogInViewModel: ObservableObject {
         let givenName = credential.fullName?.givenName
         let familyName = credential.fullName?.familyName
 
+        // ✅ For now, just save to session without CloudKit
+        // We'll implement CloudKit user profile saving later
+        session.saveUserID(userID)
+        session.givenName = givenName ?? ""
+        session.familyName = familyName ?? ""
+        session.email = email ?? ""
+
+        isLoading = false
+        
+        /* TODO: Implement CloudKit user profile save when ready
         do {
-            // 1) Save/Update in CloudKit
-            try await cloud.upsertUserProfile(
-                appleUserID: userID,
-                email: email,
-                givenName: givenName,
-                familyName: familyName
-            )
-
-            // 2) Fetch to confirm + fill session
-            let record = try await cloud.fetchUserProfile(appleUserID: userID)
-
-            session.saveUserID(userID)
-            session.givenName = (record["givenName"] as? String) ?? (givenName ?? "")
-            session.familyName = (record["familyName"] as? String) ?? (familyName ?? "")
-            session.email = (record["email"] as? String) ?? (email ?? "")
-
-            isLoading = false
-
+            try await cloud.saveUserProfile(...)
         } catch {
-            // إذا فشل CloudKit، على الأقل لا يوقف اللوقين
-            print("❌ CloudKit failed:", error.localizedDescription)
-
-            session.saveUserID(userID)
-            session.givenName = givenName ?? ""
-            session.familyName = familyName ?? ""
-            session.email = email ?? ""
-
-            isLoading = false
+            print("CloudKit error:", error)
         }
+        */
     }
 
     private func fail(with message: String) {

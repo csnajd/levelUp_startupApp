@@ -31,26 +31,38 @@ struct User: Identifiable {
     var createdAt: Date
     var updatedAt: Date
     
+    // ✅ NEW - Privacy Settings
+    var profileVisible: Bool
+    var showEmail: Bool
+    var showPhoneNumber: Bool
+    var allowInvites: Bool
+    var shareActivity: Bool
+    
     var profileImage: UIImage?
     
     var fullName: String {
         return "\(givenName) \(familyName)".trimmingCharacters(in: .whitespaces)
     }
     
-    // ✅ FIXED - Added phoneNumber parameter
     init(givenName: String = "", familyName: String = "", gender: Gender = .preferNotToSay, email: String = "", phoneNumber: String = "", appleUserID: String = "") {
         self.id = UUID().uuidString
         self.givenName = givenName
         self.familyName = familyName
         self.gender = gender
         self.email = email
-        self.phoneNumber = phoneNumber  // ✅ Initialize phoneNumber
+        self.phoneNumber = phoneNumber
         self.appleUserID = appleUserID
         self.createdAt = Date()
         self.updatedAt = Date()
+        
+        // ✅ NEW - Default privacy settings
+        self.profileVisible = true
+        self.showEmail = false
+        self.showPhoneNumber = false
+        self.allowInvites = true
+        self.shareActivity = true
     }
     
-    // ✅ FIXED - Added phoneNumber from CloudKit record
     init(from record: CKRecord) throws {
         self.id = record.recordID.recordName
         self.givenName = record["givenName"] as? String ?? ""
@@ -60,11 +72,18 @@ struct User: Identifiable {
         self.gender = Gender(rawValue: genderString) ?? .preferNotToSay
         
         self.email = record["email"] as? String ?? ""
-        self.phoneNumber = record["phoneNumber"] as? String ?? ""  // ✅ Initialize phoneNumber
+        self.phoneNumber = record["phoneNumber"] as? String ?? ""
         self.profilePhotoAsset = record["profilePhoto"] as? CKAsset
         self.appleUserID = record["appleUserID"] as? String ?? ""
         self.createdAt = record["createdAt"] as? Date ?? Date()
         self.updatedAt = record["updatedAt"] as? Date ?? Date()
+        
+        // ✅ NEW - Load privacy settings from CloudKit
+        self.profileVisible = (record["profileVisible"] as? Int64 ?? 1) == 1
+        self.showEmail = (record["showEmail"] as? Int64 ?? 0) == 1
+        self.showPhoneNumber = (record["showPhoneNumber"] as? Int64 ?? 0) == 1
+        self.allowInvites = (record["allowInvites"] as? Int64 ?? 1) == 1
+        self.shareActivity = (record["shareActivity"] as? Int64 ?? 1) == 1
         
         if let asset = profilePhotoAsset,
            let imageData = try? Data(contentsOf: asset.fileURL!),
@@ -79,10 +98,17 @@ struct User: Identifiable {
         record["familyName"] = familyName
         record["gender"] = gender.rawValue
         record["email"] = email
-        record["phoneNumber"] = phoneNumber  // ✅ Save phoneNumber
+        record["phoneNumber"] = phoneNumber
         record["appleUserID"] = appleUserID
         record["createdAt"] = createdAt
         record["updatedAt"] = Date()
+        
+        // ✅ NEW - Save privacy settings to CloudKit
+        record["profileVisible"] = profileVisible ? 1 : 0
+        record["showEmail"] = showEmail ? 1 : 0
+        record["showPhoneNumber"] = showPhoneNumber ? 1 : 0
+        record["allowInvites"] = allowInvites ? 1 : 0
+        record["shareActivity"] = shareActivity ? 1 : 0
         
         if let image = profileImage,
            let imageData = image.jpegData(compressionQuality: 0.8) {

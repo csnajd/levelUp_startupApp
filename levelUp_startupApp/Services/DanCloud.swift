@@ -25,7 +25,6 @@
 //
 //  Created on 2026-02-10
 //
-
 import Foundation
 import CloudKit
 
@@ -124,24 +123,24 @@ class CloudKitServices {
     
     // MARK: - Project Operations (for future use)
     
-    func saveProject(_ project: Project) async throws -> Project {
+    func saveProject(_ project: CloudProject) async throws -> CloudProject {  // ✅ Renamed
         // Implementation will be added when creating project features
         fatalError("Not implemented yet")
     }
     
-    func fetchCommunityProjects(communityID: String) async throws -> [Project] {
+    func fetchCommunityProjects(communityID: String) async throws -> [CloudProject] {  // ✅ Renamed
         // Implementation will be added when creating project features
         return []
     }
     
     // MARK: - Task Operations (for future use)
     
-    func saveTask(_ task: TaskItem) async throws -> TaskItem {
+    func saveTask(_ task: CloudTask) async throws -> CloudTask {  // ✅ Renamed
         // Implementation will be added when creating task features
         fatalError("Not implemented yet")
     }
     
-    func fetchProjectTasks(projectID: String) async throws -> [TaskItem] {
+    func fetchProjectTasks(projectID: String) async throws -> [CloudTask] {  // ✅ Renamed
         // Implementation will be added when creating task features
         return []
     }
@@ -149,7 +148,7 @@ class CloudKitServices {
 
 // MARK: - Placeholder Models (to be implemented later)
 
-struct Project: Identifiable {
+struct CloudProject: Identifiable {  // ✅ Renamed from Project
     var id: String
     var name: String
     var description: String
@@ -157,7 +156,7 @@ struct Project: Identifiable {
     var createdAt: Date
 }
 
-struct TaskItem: Identifiable {
+struct CloudTask: Identifiable {  // ✅ Renamed from TaskItem
     var id: String
     var title: String
     var description: String
