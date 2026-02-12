@@ -9,8 +9,8 @@ class LogInViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
-    // ✅ FIXED - Changed CloudKitService to CloudKitServices
-    private let cloud = CloudKitServices.shared  // Use the singleton
+    // ✅ Using shared singleton instance
+    private let cloud = CloudKitServices.shared
 
     func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         request.requestedScopes = [.fullName, .email]
@@ -51,7 +51,24 @@ class LogInViewModel: ObservableObject {
         
         /* TODO: Implement CloudKit user profile save when ready
         do {
-            try await cloud.saveUserProfile(...)
+            // 1) Save/Update in CloudKit
+            try await cloud.upsertUserProfile(
+                appleUserID: userID,
+                email: email,
+                givenName: givenName,
+                familyName: familyName
+            )
+
+            // 2) Fetch to confirm + fill session
+            let user = try await cloud.fetchUserProfile(appleUserID: userID)
+
+            session.saveUserID(userID)
+            session.givenName = user?.givenName ?? (givenName ?? "")
+            session.familyName = user?.familyName ?? (familyName ?? "")
+            session.email = user?.email ?? (email ?? "")
+
+            isLoading = false
+
         } catch {
             print("CloudKit error:", error)
         }
