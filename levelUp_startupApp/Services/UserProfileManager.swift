@@ -11,6 +11,9 @@ import SwiftUI
 import CloudKit
 internal import Combine
 
+
+
+
 @MainActor
 class UserProfileManager: ObservableObject {
     static let shared = UserProfileManager()
@@ -22,7 +25,7 @@ class UserProfileManager: ObservableObject {
     @Published var profileImage: UIImage?
     @Published var isLoading = false
     
-    private let cloudKitService = Cloudkit.shared
+    private let cloudKitService = CloudKitServices.shared
     
     private init() {
         // Load profile on init
@@ -49,6 +52,29 @@ class UserProfileManager: ObservableObject {
             isLoading = false
         } catch {
             print("Error loading profile: \(error.localizedDescription)")
+            isLoading = false
+        }
+    }
+    
+    func saveProfile() async {
+        isLoading = true
+        do {
+            guard let appleUserID = try await cloudKitService.getCurrentUserID() else {
+                isLoading = false
+                return
+            }
+            
+            // Use upsert to save/update profile
+            try await cloudKitService.upsertUserProfile(
+                appleUserID: appleUserID,
+                email: email.isEmpty ? nil : email,
+                givenName: givenName.isEmpty ? nil : givenName,
+                familyName: familyName.isEmpty ? nil : familyName
+            )
+            
+            isLoading = false
+        } catch {
+            print("Error saving profile: \(error.localizedDescription)")
             isLoading = false
         }
     }

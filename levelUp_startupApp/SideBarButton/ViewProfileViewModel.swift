@@ -6,6 +6,14 @@
 //
 
 
+//
+//  profileViewModel.swift
+//  levelUp_startupApp
+//
+//  Created by Danyah ALbarqawi on 02/02/2026.
+//
+
+
 import Foundation
 import SwiftUI
 import PhotosUI
@@ -13,7 +21,7 @@ import CloudKit
 internal import Combine
 
 @MainActor
-class EditProfileViewModel: ObservableObject {  // ✅ RENAMED to EditProfileViewModel
+class EdietprofileViewModel: ObservableObject {
     @Published var givenName = ""
     @Published var familyName = ""
     @Published var gender: Gender = .preferNotToSay
@@ -25,16 +33,20 @@ class EditProfileViewModel: ObservableObject {  // ✅ RENAMED to EditProfileVie
     @Published var errorMessage: String?
     @Published var savedSuccessfully = false
     
-    private let cloudKitService = Cloudkit.shared
+    private let cloudKitService = CloudKitServices.shared
     
     var isSaveButtonEnabled: Bool {
-        true
+        !givenName.isEmpty && !familyName.isEmpty && !email.isEmpty  // ✅ FIXED - Added email check
     }
     
     func saveProfile() async {
+        guard isSaveButtonEnabled else {
+            errorMessage = "Please fill in all required fields"
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
-        savedSuccessfully = false
         
         do {
             guard let appleUserID = try await cloudKitService.getCurrentUserID() else {
@@ -47,7 +59,7 @@ class EditProfileViewModel: ObservableObject {  // ✅ RENAMED to EditProfileVie
                 familyName: familyName,
                 gender: gender,
                 email: email,
-                phoneNumber: phoneNumber,
+                phoneNumber: phoneNumber,  // ✅ Include phone number
                 appleUserID: appleUserID
             )
             user.profileImage = profileImage
@@ -60,7 +72,6 @@ class EditProfileViewModel: ObservableObject {  // ✅ RENAMED to EditProfileVie
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
-            savedSuccessfully = false
         }
     }
     

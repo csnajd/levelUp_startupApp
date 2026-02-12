@@ -13,7 +13,7 @@ import CloudKit
 internal import Combine
 
 @MainActor
-class profileViewModel: ObservableObject {
+class EditProfileViewModel: ObservableObject {
     @Published var givenName = ""
     @Published var familyName = ""
     @Published var gender: Gender = .preferNotToSay
@@ -25,7 +25,7 @@ class profileViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var savedSuccessfully = false
     
-    private let cloudKitService = Cloudkit.shared
+    private let cloudKitService = CloudKitServices.shared
     
     var isSaveButtonEnabled: Bool {
         !givenName.isEmpty && !familyName.isEmpty && !email.isEmpty  // ✅ FIXED - Added email check

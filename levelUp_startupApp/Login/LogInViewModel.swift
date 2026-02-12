@@ -9,8 +9,8 @@ class LogInViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
-    // ✅ Public عشان iCloud عندك ممتلئ (إذا فضّيتي iCloud بدّليها false)
-    private let cloud = CloudKitService(containerID: nil, usePublicDB: true)
+    // ✅ Using shared singleton instance
+    private let cloud = CloudKitServices.shared
 
     func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         request.requestedScopes = [.fullName, .email]
@@ -50,12 +50,12 @@ class LogInViewModel: ObservableObject {
             )
 
             // 2) Fetch to confirm + fill session
-            let record = try await cloud.fetchUserProfile(appleUserID: userID)
+            let user = try await cloud.fetchUserProfile(appleUserID: userID)
 
             session.saveUserID(userID)
-            session.givenName = (record["givenName"] as? String) ?? (givenName ?? "")
-            session.familyName = (record["familyName"] as? String) ?? (familyName ?? "")
-            session.email = (record["email"] as? String) ?? (email ?? "")
+            session.givenName = user?.givenName ?? (givenName ?? "")
+            session.familyName = user?.familyName ?? (familyName ?? "")
+            session.email = user?.email ?? (email ?? "")
 
             isLoading = false
 

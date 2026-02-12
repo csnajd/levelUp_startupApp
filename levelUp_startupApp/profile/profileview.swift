@@ -13,7 +13,7 @@ import SwiftUI
 import PhotosUI
 
 struct profileview: View {
-    @StateObject private var viewModel = profileViewModel()
+    @StateObject private var viewModel = EditProfileViewModel()
     @State private var showGenderPicker = false
     @State private var selectedItem: PhotosPickerItem?
     

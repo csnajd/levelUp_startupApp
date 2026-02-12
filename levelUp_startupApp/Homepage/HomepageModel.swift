@@ -5,7 +5,15 @@
 //  Created by Danyah ALbarqawi on 02/02/2026.
 //
 
+//
+//  HomepageModel.swift
+//  levelUp_startupApp
+//
+//  Created by Danyah ALbarqawi on 02/02/2026.
+//
+
 import Foundation
+import CloudKit
 
 struct Project: Identifiable {
     var id = UUID()
@@ -16,8 +24,54 @@ struct Project: Identifiable {
     var createdAt: Date
     var communityID: String
     
+    // CloudKit record (optional)
+    var record: CKRecord?
+    
     var memberCount: Int {
         return memberIDs.count
+    }
+    
+    // Initialize from CloudKit record
+    init?(from record: CKRecord) {
+        guard let name = record["name"] as? String,
+              let memberIDs = record["memberIDs"] as? [String],
+              let communityID = record["communityID"] as? String else {
+            return nil
+        }
+        
+        self.id = UUID(uuidString: record.recordID.recordName) ?? UUID()
+        self.name = name
+        self.memberIDs = memberIDs
+        self.isBlocked = record["isBlocked"] as? Bool ?? false
+        self.blockReason = record["blockReason"] as? String
+        self.createdAt = record["createdAt"] as? Date ?? Date()
+        self.communityID = communityID
+        self.record = record
+    }
+    
+    // Regular initializer
+    init(id: UUID = UUID(), name: String, memberIDs: [String], isBlocked: Bool, blockReason: String?, createdAt: Date, communityID: String) {
+        self.id = id
+        self.name = name
+        self.memberIDs = memberIDs
+        self.isBlocked = isBlocked
+        self.blockReason = blockReason
+        self.createdAt = createdAt
+        self.communityID = communityID
+    }
+    
+    // Convert to CloudKit record
+    func toCKRecord() -> CKRecord {
+        let record = self.record ?? CKRecord(recordType: "Project", recordID: CKRecord.ID(recordName: id.uuidString))
+        
+        record["name"] = name
+        record["memberIDs"] = memberIDs
+        record["isBlocked"] = isBlocked
+        record["blockReason"] = blockReason
+        record["createdAt"] = createdAt
+        record["communityID"] = communityID
+        
+        return record
     }
 }
 

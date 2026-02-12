@@ -26,6 +26,28 @@
 //  Created on 2026-02-10
 //
 
+//
+//  CloudKitServices.swift
+//  levelUp_startupApp
+//
+//  Created on 2026-02-10
+//
+
+//
+//  CloudKitServices.swift
+//  levelUp_startupApp
+//
+//  Created on 2026-02-10
+//
+
+//
+//  CloudKitServices.swift
+//  levelUp_startupApp
+//
+//  Unified CloudKit Service - Merged from all sources
+//  Created on 2026-02-11
+//
+
 import Foundation
 import CloudKit
 
@@ -49,6 +71,76 @@ class CloudKitServices {
         return recordID.recordName
     }
     
+    // MARK: - User Profile Operations
+    
+    func saveUserProfile(_ user: User) async throws -> User {
+        let record = try user.toCKRecord()
+        let savedRecord = try await publicDatabase.save(record)
+        return try User(from: savedRecord)
+    }
+    
+    func fetchUserProfile(appleUserID: String) async throws -> User? {
+        let predicate = NSPredicate(format: "appleUserID == %@", appleUserID)
+        let query = CKQuery(recordType: "UserProfile", predicate: predicate)
+        
+        let (results, _) = try await publicDatabase.records(matching: query)
+        
+        for result in results {
+            switch result.1 {
+            case .success(let record):
+                return try User(from: record)
+            case .failure(let error):
+                throw error
+            }
+        }
+        
+        return nil
+    }
+    
+    func upsertUserProfile(
+        appleUserID: String,
+        email: String?,
+        givenName: String?,
+        familyName: String?
+    ) async throws {
+        let recordID = CKRecord.ID(recordName: appleUserID)
+        
+        let record: CKRecord
+        do {
+            record = try await publicDatabase.record(for: recordID)
+        } catch let error as CKError {
+            if error.code == .unknownItem {
+                record = CKRecord(recordType: "UserProfile", recordID: recordID)
+                record["createdAt"] = Date() as CKRecordValue
+                record["appleUserID"] = appleUserID as CKRecordValue
+            } else {
+                throw error
+            }
+        }
+        
+        if let email, !email.isEmpty {
+            record["email"] = email as CKRecordValue
+        }
+        if let givenName, !givenName.isEmpty {
+            record["givenName"] = givenName as CKRecordValue
+        }
+        if let familyName, !familyName.isEmpty {
+            record["familyName"] = familyName as CKRecordValue
+        }
+        
+        record["lastLogin"] = Date() as CKRecordValue
+        
+        let saved = try await publicDatabase.save(record)
+        print("✅ CloudKit saved:", saved.recordType, saved.recordID.recordName)
+    }
+    
+    func fetchUserProfileRecord(appleUserID: String) async throws -> CKRecord {
+        let recordID = CKRecord.ID(recordName: appleUserID)
+        let fetched = try await publicDatabase.record(for: recordID)
+        print("✅ CloudKit fetched:", fetched.recordType, fetched.recordID.recordName)
+        return fetched
+    }
+    
     // MARK: - Community Operations
     
     func saveCommunity(_ community: Community) async throws -> Community {
@@ -56,7 +148,7 @@ class CloudKitServices {
         let savedRecord = try await publicDatabase.save(record)
         
         guard let savedCommunity = Community(from: savedRecord) else {
-            throw NSError(domain: "CloudKitService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create community from saved record"])
+            throw NSError(domain: "CloudKitServices", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create community from saved record"])
         }
         
         return savedCommunity
@@ -67,7 +159,7 @@ class CloudKitServices {
         let savedRecord = try await publicDatabase.save(record)
         
         guard let updatedCommunity = Community(from: savedRecord) else {
-            throw NSError(domain: "CloudKitService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create community from saved record"])
+            throw NSError(domain: "CloudKitServices", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create community from saved record"])
         }
         
         return updatedCommunity
@@ -75,7 +167,7 @@ class CloudKitServices {
     
     func fetchUserCommunities() async throws -> [Community] {
         guard let userID = try await getCurrentUserID() else {
-            throw NSError(domain: "CloudKitService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Could not get user ID"])
+            throw NSError(domain: "CloudKitServices", code: -1, userInfo: [NSLocalizedDescriptionKey: "Could not get user ID"])
         }
         
         let predicate = NSPredicate(format: "memberIDs CONTAINS %@", userID)
@@ -122,47 +214,95 @@ class CloudKitServices {
         try await publicDatabase.deleteRecord(withID: recordID)
     }
     
-    // MARK: - Project Operations (for future use)
+    // MARK: - Project Operations
     
     func saveProject(_ project: Project) async throws -> Project {
-        // Implementation will be added when creating project features
-        fatalError("Not implemented yet")
+        let record = project.toCKRecord()
+        let savedRecord = try await publicDatabase.save(record)
+        
+        guard let savedProject = Project(from: savedRecord) else {
+            throw NSError(domain: "CloudKitServices", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create project from saved record"])
+        }
+        
+        return savedProject
     }
     
     func fetchCommunityProjects(communityID: String) async throws -> [Project] {
-        // Implementation will be added when creating project features
-        return []
+        let predicate = NSPredicate(format: "communityID == %@", communityID)
+        let query = CKQuery(recordType: "Project", predicate: predicate)
+        query.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        
+        let (results, _) = try await publicDatabase.records(matching: query)
+        
+        var projects: [Project] = []
+        for (_, result) in results {
+            switch result {
+            case .success(let record):
+                if let project = Project(from: record) {
+                    projects.append(project)
+                }
+            case .failure(let error):
+                print("Error fetching project: \(error)")
+            }
+        }
+        
+        return projects
+    }
+    
+    func updateProject(_ project: Project) async throws -> Project {
+        let record = project.toCKRecord()
+        let savedRecord = try await publicDatabase.save(record)
+        
+        guard let updatedProject = Project(from: savedRecord) else {
+            throw NSError(domain: "CloudKitServices", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create project from saved record"])
+        }
+        
+        return updatedProject
+    }
+    
+    func deleteProject(_ projectID: String) async throws {
+        let recordID = CKRecord.ID(recordName: projectID)
+        try await publicDatabase.deleteRecord(withID: recordID)
     }
     
     // MARK: - Task Operations (for future use)
     
-    func saveTask(_ task: TaskItem) async throws -> TaskItem {
-        // Implementation will be added when creating task features
-        fatalError("Not implemented yet")
+    func saveTaskItem(
+        title: String,
+        description: String,
+        projectID: String,
+        assignedUserIDs: [String],
+        status: String
+    ) async throws {
+        let record = CKRecord(recordType: "Task")
+        record["title"] = title as CKRecordValue
+        record["description"] = description as CKRecordValue
+        record["projectID"] = projectID as CKRecordValue
+        record["assignedUserIDs"] = assignedUserIDs as CKRecordValue
+        record["status"] = status as CKRecordValue
+        record["createdAt"] = Date() as CKRecordValue
+        
+        _ = try await publicDatabase.save(record)
     }
     
-    func fetchProjectTasks(projectID: String) async throws -> [TaskItem] {
-        // Implementation will be added when creating task features
-        return []
+    func fetchProjectTasks(projectID: String) async throws -> [String] {
+        let predicate = NSPredicate(format: "projectID == %@", projectID)
+        let query = CKQuery(recordType: "Task", predicate: predicate)
+        
+        let (results, _) = try await publicDatabase.records(matching: query)
+        
+        var taskTitles: [String] = []
+        for (_, result) in results {
+            switch result {
+            case .success(let record):
+                if let title = record["title"] as? String {
+                    taskTitles.append(title)
+                }
+            case .failure(let error):
+                print("Error fetching task: \(error)")
+            }
+        }
+        
+        return taskTitles
     }
-}
-
-// MARK: - Placeholder Models (to be implemented later)
-
-struct Project: Identifiable {
-    var id: String
-    var name: String
-    var description: String
-    var communityID: String
-    var createdAt: Date
-}
-
-struct TaskItem: Identifiable {
-    var id: String
-    var title: String
-    var description: String
-    var projectID: String
-    var assignedUserIDs: [String]
-    var status: String
-    var createdAt: Date
 }
