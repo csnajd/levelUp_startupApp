@@ -7,6 +7,7 @@
 
 
 import SwiftUI
+import CloudKit
 
 struct CreateMeetingView: View {
     @Environment(\.dismiss) private var dismiss
@@ -23,6 +24,11 @@ struct CreateMeetingView: View {
     @State private var showAttendeePicker = false
     @State private var showDatePicker = false
     @State private var showPlatformPicker = false
+    
+    // TODO: Replace with actual community ID from your app state
+    var currentCommunityID: String {
+        return "community1" // Replace this with actual community ID
+    }
     
     var isFormValid: Bool {
         !meetingName.isEmpty && !selectedProject.isEmpty && !platform.isEmpty && !link.isEmpty
@@ -43,7 +49,7 @@ struct CreateMeetingView: View {
                         Text("Meeting Name")
                             .font(.system(size: 16, weight: .medium))
                         
-                        TextField("e.g. Fajer company", text: $meetingName)
+                        TextField("e.g. WorkHive Meeting", text: $meetingName)
                             .padding()
                             .background(Color.white)
                             .overlay(
@@ -252,7 +258,10 @@ struct CreateMeetingView: View {
                 ProjectPickerView(selectedProject: $selectedProject)
             }
             .sheet(isPresented: $showAttendeePicker) {
-                AttendeePickerView(selectedAttendees: $selectedAttendees)
+                AttendeePickerView(
+                    selectedAttendees: $selectedAttendees,
+                    communityID: currentCommunityID
+                )
             }
             .sheet(isPresented: $showDatePicker) {
                 DatePickerView(selectedDate: $selectedDate)
@@ -278,7 +287,7 @@ struct CreateMeetingView: View {
             dateTime: selectedDate,
             platform: platform,
             link: link,
-            communityID: "community1", // TODO: Get actual community ID from your app state
+            communityID: currentCommunityID,
             createdAt: Date()
         )
         
@@ -292,7 +301,9 @@ struct ProjectPickerView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedProject: String
     
-    let projects = ["The line project", "Counting project", "Design project", "Marketing project"]
+    // ✅ Only show "Not related to any project" by default
+    // Later: fetch real projects from CloudKit
+    let projects = ["Not related to any project"]
     
     var body: some View {
         NavigationStack {
@@ -303,6 +314,7 @@ struct ProjectPickerView: View {
                 }) {
                     HStack {
                         Text(project)
+                            .foregroundColor(project == "Not related to any project" ? .gray : .primary)
                         Spacer()
                         if selectedProject == project {
                             Image(systemName: "checkmark")
@@ -316,35 +328,139 @@ struct ProjectPickerView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") { dismiss() }
+                        .foregroundColor(Color("primary"))
                 }
             }
         }
     }
 }
 
-// Attendee Picker
+// ✅ UPDATED - Attendee Picker with CloudKit Integration
 struct AttendeePickerView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedAttendees: [String]
     
-    let attendees = ["user1", "user2", "user3", "user4", "user5"]
+    @State private var communityMembers: [User] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    
+    var communityID: String
+    private let cloudKitService = CloudKitServices.shared
     
     var body: some View {
         NavigationStack {
-            List(attendees, id: \.self) { attendee in
-                Button(action: {
-                    if selectedAttendees.contains(attendee) {
-                        selectedAttendees.removeAll { $0 == attendee }
-                    } else {
-                        selectedAttendees.append(attendee)
+            Group {
+                if isLoading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                        Text("Loading members...")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
                     }
-                }) {
-                    HStack {
-                        Text("User \(attendee)")
-                        Spacer()
-                        if selectedAttendees.contains(attendee) {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(Color("primary"))
+                } else if let error = errorMessage {
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 48))
+                            .foregroundColor(.orange)
+                        Text("Error Loading Members")
+                            .font(.headline)
+                        Text(error)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                        
+                        Button("Retry") {
+                            Task {
+                                await loadCommunityMembers()
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color("primary"))
+                    }
+                    .padding()
+                } else if communityMembers.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.2.slash")
+                            .font(.system(size: 48))
+                            .foregroundColor(.gray)
+                        Text("No community members found")
+                            .font(.headline)
+                            .foregroundColor(.gray)
+                        Text("Invite people to join your community")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                } else {
+                    List {
+                        ForEach(communityMembers) { member in
+                            Button(action: {
+                                toggleMember(member.id)
+                            }) {
+                                HStack(spacing: 12) {
+                                    // Profile image or placeholder
+                                    if let image = member.profileImage {
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 40, height: 40)
+                                            .clipShape(Circle())
+                                    } else {
+                                        Circle()
+                                            .fill(Color("primary").opacity(0.2))
+                                            .frame(width: 40, height: 40)
+                                            .overlay(
+                                                Text(member.givenName.prefix(1).uppercased())
+                                                    .font(.system(size: 16, weight: .semibold))
+                                                    .foregroundColor(Color("primary"))
+                                            )
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(member.fullName)
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.primary)
+                                        
+                                        // Only show email if user has enabled it in privacy settings
+                                        if !member.email.isEmpty && member.showEmail {
+                                            Text(member.email)
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.gray)
+                                        }
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    if selectedAttendees.contains(member.id) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(Color("primary"))
+                                            .font(.system(size: 24))
+                                    } else {
+                                        Image(systemName: "circle")
+                                            .foregroundColor(.gray.opacity(0.3))
+                                            .font(.system(size: 24))
+                                    }
+                                }
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        
+                        // Show count of selected members
+                        if !selectedAttendees.isEmpty {
+                            Section {
+                                HStack {
+                                    Text("\(selectedAttendees.count) member\(selectedAttendees.count == 1 ? "" : "s") selected")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                    Spacer()
+                                    Button("Clear All") {
+                                        selectedAttendees.removeAll()
+                                    }
+                                    .font(.subheadline)
+                                    .foregroundColor(Color("primary"))
+                                }
+                            }
                         }
                     }
                 }
@@ -352,10 +468,49 @@ struct AttendeePickerView: View {
             .navigationTitle("Select Attendees")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if !selectedAttendees.isEmpty && !communityMembers.isEmpty {
+                        Button("Select All") {
+                            selectedAttendees = communityMembers.map { $0.id }
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(Color("primary"))
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color("primary"))
+                    .fontWeight(.semibold)
                 }
             }
+            .task {
+                await loadCommunityMembers()
+            }
+        }
+    }
+    
+    private func toggleMember(_ memberID: String) {
+        if selectedAttendees.contains(memberID) {
+            selectedAttendees.removeAll { $0 == memberID }
+        } else {
+            selectedAttendees.append(memberID)
+        }
+    }
+    
+    private func loadCommunityMembers() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            communityMembers = try await cloudKitService.fetchCommunityMembers(communityID: communityID)
+            isLoading = false
+        } catch {
+            errorMessage = error.localizedDescription
+            isLoading = false
+            print("❌ Error loading community members: \(error)")
         }
     }
 }

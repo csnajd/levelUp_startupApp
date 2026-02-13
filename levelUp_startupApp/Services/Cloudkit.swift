@@ -71,7 +71,7 @@ class Cloudkit {
     func fetchCommunityMeetings(communityID: String) async throws -> [Meeting] {
         let predicate = NSPredicate(format: "communityID == %@", communityID)
         let query = CKQuery(recordType: "Meeting", predicate: predicate)
-        query.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
+        
         
         let (results, _) = try await publicDatabase.records(matching: query)
         
@@ -87,13 +87,13 @@ class Cloudkit {
             }
         }
         
-        return meetings
+        return meetings.sorted { $0.dateTime < $1.dateTime }
     }
     
     func fetchProjectMeetings(projectID: String) async throws -> [Meeting] {
         let predicate = NSPredicate(format: "projectID == %@", projectID)
         let query = CKQuery(recordType: "Meeting", predicate: predicate)
-        query.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
+        
         
         let (results, _) = try await publicDatabase.records(matching: query)
         
@@ -109,13 +109,13 @@ class Cloudkit {
             }
         }
         
-        return meetings
+        return meetings.sorted { $0.dateTime < $1.dateTime }
     }
     
     func fetchUserMeetings(userID: String) async throws -> [Meeting] {
         let predicate = NSPredicate(format: "attendeeIDs CONTAINS %@", userID)
         let query = CKQuery(recordType: "Meeting", predicate: predicate)
-        query.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
+        
         
         let (results, _) = try await publicDatabase.records(matching: query)
         
@@ -131,7 +131,7 @@ class Cloudkit {
             }
         }
         
-        return meetings
+        return meetings.sorted { $0.dateTime < $1.dateTime }
     }
     
     func updateMeeting(_ meeting: Meeting) async throws -> Meeting {
@@ -150,4 +150,5 @@ class Cloudkit {
         let recordID = CKRecord.ID(recordName: meetingID)
         try await publicDatabase.deleteRecord(withID: recordID)
     }
+    
 }

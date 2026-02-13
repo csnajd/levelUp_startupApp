@@ -6,48 +6,7 @@
 //
 
 //
-//  CloudKitService.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-10
-//
-
-//
-//  CloudKitService.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-10
-//
-
-//
-//  CloudKitServices.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-10
-//
-
-//
-//  CloudKitServices.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-10
-//
-
-//
-//  CloudKitServices.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-10
-//
-
-//
-//  CloudKitServices.swift
-//  levelUp_startupApp
-//
-//  Unified CloudKit Service - Merged from all sources
-//  Created on 2026-02-11
-//
-
+//  import Foundation
 import Foundation
 import CloudKit
 
@@ -144,14 +103,22 @@ class CloudKitServices {
     // MARK: - Community Operations
     
     func saveCommunity(_ community: Community) async throws -> Community {
+        print("💾 Attempting to save community: \(community.name)")
         let record = community.toCKRecord()
-        let savedRecord = try await publicDatabase.save(record)
         
-        guard let savedCommunity = Community(from: savedRecord) else {
-            throw NSError(domain: "CloudKitServices", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create community from saved record"])
+        do {
+            let savedRecord = try await publicDatabase.save(record)
+            print("✅ Community saved successfully!")
+            
+            guard let savedCommunity = Community(from: savedRecord) else {
+                throw NSError(domain: "CloudKitServices", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create community from saved record"])
+            }
+            
+            return savedCommunity
+        } catch {
+            print("❌ Error saving community: \(error)")
+            throw error
         }
-        
-        return savedCommunity
     }
     
     func updateCommunity(_ community: Community) async throws -> Community {
@@ -172,7 +139,7 @@ class CloudKitServices {
         
         let predicate = NSPredicate(format: "memberIDs CONTAINS %@", userID)
         let query = CKQuery(recordType: "Community", predicate: predicate)
-        query.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        // ✅ NO sortDescriptors line here!
         
         let (results, _) = try await publicDatabase.records(matching: query)
         
@@ -188,7 +155,8 @@ class CloudKitServices {
             }
         }
         
-        return communities
+        // ✅ Sort in memory instead
+        return communities.sorted { $0.createdAt > $1.createdAt }
     }
     
     func findCommunityByInviteCode(_ code: String) async throws -> Community? {
@@ -230,7 +198,7 @@ class CloudKitServices {
     func fetchCommunityProjects(communityID: String) async throws -> [Project] {
         let predicate = NSPredicate(format: "communityID == %@", communityID)
         let query = CKQuery(recordType: "Project", predicate: predicate)
-        query.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        // ✅ REMOVED sortDescriptors - sorting in memory instead
         
         let (results, _) = try await publicDatabase.records(matching: query)
         
@@ -246,7 +214,8 @@ class CloudKitServices {
             }
         }
         
-        return projects
+        // ✅ Sort in memory by createdAt
+        return projects.sorted { $0.createdAt > $1.createdAt }
     }
     
     func updateProject(_ project: Project) async throws -> Project {
@@ -305,11 +274,57 @@ class CloudKitServices {
         
         return taskTitles
     }
+    
+    // MARK: - Community Members
+    
+    /// Fetch all members of a specific community
+    /// - Parameter communityID: The ID of the community
+    /// - Returns: Array of User objects who are members of the community
+    func fetchCommunityMembers(communityID: String) async throws -> [User] {
+        // Fetch the community by ID
+        let communityRecordID = CKRecord.ID(recordName: communityID)
+        let communityRecord = try await publicDatabase.record(for: communityRecordID)
+        
+        guard let community = Community(from: communityRecord) else {
+            throw NSError(
+                domain: "CloudKitServices",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "Could not parse community"]
+            )
+        }
+        
+        var members: [User] = []
+        
+        // Fetch each member's user profile from publicDatabase
+        for memberID in community.memberIDs {
+            let userPredicate = NSPredicate(format: "appleUserID == %@", memberID)
+            let userQuery = CKQuery(recordType: "UserProfile", predicate: userPredicate)
+            
+            let (userResults, _) = try await publicDatabase.records(matching: userQuery)
+            
+            for (_, userResult) in userResults {
+                switch userResult {
+                case .success(let record):
+                    if let user = try? User(from: record) {
+                        // Only include users who have visible profiles
+                        if user.profileVisible {
+                            members.append(user)
+                        }
+                    }
+                case .failure(let error):
+                    print("⚠️ Error fetching user \(memberID): \(error)")
+                }
+            }
+        }
+        
+        // Sort alphabetically by full name
+        return members.sorted { $0.fullName < $1.fullName }
+    }
 }
 
 // MARK: - Placeholder Models (to be implemented later)
 
-struct CloudProject: Identifiable {  // ✅ Renamed from Project
+struct CloudProject: Identifiable {
     var id: String
     var name: String
     var description: String
@@ -317,7 +332,7 @@ struct CloudProject: Identifiable {  // ✅ Renamed from Project
     var createdAt: Date
 }
 
-struct CloudTask: Identifiable {  // ✅ Renamed from TaskItem
+struct CloudTask: Identifiable {
     var id: String
     var title: String
     var description: String
@@ -326,4 +341,3 @@ struct CloudTask: Identifiable {  // ✅ Renamed from TaskItem
     var status: String
     var createdAt: Date
 }
-

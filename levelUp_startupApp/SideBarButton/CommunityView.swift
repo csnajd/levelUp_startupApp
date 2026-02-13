@@ -173,61 +173,161 @@ struct MemberCard: View {
     }
 }
 
-// Add Member View (Placeholder)
+// ✅ UPDATED - Add Member View with CloudKit Integration
 struct AddMemberView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var inviteCode = ""
+    @State private var inviteLink = ""
+    @State private var isLoading = true
+    @State private var showCopiedMessage = false
+    @State private var copiedItem: CopiedItem?
+    
+    private let cloudKitService = CloudKitServices.shared
+    
+    enum CopiedItem {
+        case code, link
+    }
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                Text("Add Member")
-                    .font(.system(size: 28, weight: .bold))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 40)
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Share Invite Code")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.black)
-                    
-                    HStack {
-                        Text("ABC123XY")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(Color("primary"))
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            // Copy invite code
-                            UIPasteboard.general.string = "ABC123XY"
-                        }) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "doc.on.doc")
-                                Text("Copy")
+            VStack(spacing: 0) {
+                if isLoading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                        Text("Loading invite details...")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            Text("Add Member")
+                                .font(.system(size: 28, weight: .bold))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 24)
+                                .padding(.top, 40)
+                            
+                            // Invite Code Section
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Share Invite Code")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.black)
+                                
+                                HStack(spacing: 12) {
+                                    Text(inviteCode.isEmpty ? "Loading..." : inviteCode)
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundColor(Color("primary"))
+                                    
+                                    Spacer()
+                                    
+                                    Button(action: {
+                                        copyToClipboard(inviteCode, item: .code)
+                                    }) {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: copiedItem == .code ? "checkmark" : "doc.on.doc")
+                                            Text(copiedItem == .code ? "Copied" : "Copy")
+                                        }
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                        .background(copiedItem == .code ? Color.green : Color("primary"))
+                                        .cornerRadius(20)
+                                    }
+                                    .disabled(inviteCode.isEmpty)
+                                }
+                                .padding(16)
+                                .background(Color("primary").opacity(0.1))
+                                .cornerRadius(16)
                             }
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color("primary"))
-                            .cornerRadius(16)
+                            .padding(.horizontal, 24)
+                            
+                            // Invite Link Section
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Share Invite Link")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.black)
+                                
+                                VStack(spacing: 12) {
+                                    Text(inviteLink.isEmpty ? "Loading..." : inviteLink)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.gray)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .lineLimit(2)
+                                        .padding(16)
+                                        .background(Color("primary").opacity(0.1))
+                                        .cornerRadius(16)
+                                    
+                                    HStack(spacing: 12) {
+                                        Button(action: {
+                                            copyToClipboard(inviteLink, item: .link)
+                                        }) {
+                                            HStack(spacing: 6) {
+                                                Image(systemName: copiedItem == .link ? "checkmark" : "doc.on.doc")
+                                                Text(copiedItem == .link ? "Copied" : "Copy Link")
+                                            }
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(.white)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 12)
+                                            .background(copiedItem == .link ? Color.green : Color("primary"))
+                                            .cornerRadius(20)
+                                        }
+                                        .disabled(inviteLink.isEmpty)
+                                        
+                                        Button(action: {
+                                            shareInvite()
+                                        }) {
+                                            HStack(spacing: 6) {
+                                                Image(systemName: "square.and.arrow.up")
+                                                Text("Share")
+                                            }
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(Color("primary"))
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 12)
+                                            .background(Color.white)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .stroke(Color("primary"), lineWidth: 2)
+                                            )
+                                        }
+                                        .disabled(inviteLink.isEmpty)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                            
+                            // Instructions
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "info.circle.fill")
+                                        .foregroundColor(Color("primary"))
+                                    Text("How to invite members:")
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("• Share the invite code for quick access")
+                                    Text("• Or share the link via messaging apps")
+                                    Text("• Members can join using either method")
+                                }
+                                .font(.system(size: 13))
+                                .foregroundColor(.gray)
+                                .padding(.leading, 28)
+                            }
+                            .padding(16)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            .padding(.horizontal, 24)
+                            
+                            Spacer(minLength: 40)
                         }
                     }
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
                 }
-                .padding(.horizontal, 24)
-                
-                Text("Share this code with people you want to add to your community")
-                    .font(.system(size: 14))
-                    .foregroundColor(.gray)
-                    .padding(.horizontal, 24)
-                
-                Spacer()
             }
+            .background(Color.white)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -235,8 +335,56 @@ struct AddMemberView: View {
                         dismiss()
                     }
                     .foregroundColor(Color("primary"))
+                    .fontWeight(.semibold)
                 }
             }
+            .task {
+                await loadInviteDetails()
+            }
+        }
+    }
+    
+    private func loadInviteDetails() async {
+        isLoading = true
+        
+        do {
+            let communities = try await cloudKitService.fetchUserCommunities()
+            
+            if let community = communities.first {
+                inviteCode = community.inviteCode
+                inviteLink = "levelup://join/\(community.inviteCode)"
+                print("✅ Loaded invite code: \(inviteCode)")
+            } else {
+                print("⚠️ No community found")
+                inviteCode = "N/A"
+                inviteLink = "No community available"
+            }
+        } catch {
+            print("❌ Error loading invite details: \(error)")
+            inviteCode = "Error"
+            inviteLink = "Failed to load"
+        }
+        
+        isLoading = false
+    }
+    
+    private func copyToClipboard(_ text: String, item: CopiedItem) {
+        UIPasteboard.general.string = text
+        copiedItem = item
+        
+        // Reset after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            copiedItem = nil
+        }
+    }
+    
+    private func shareInvite() {
+        let shareText = "Join our community on LevelUp!\nInvite Code: \(inviteCode)\nLink: \(inviteLink)"
+        let activityVC = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(activityVC, animated: true)
         }
     }
 }

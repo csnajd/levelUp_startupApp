@@ -22,7 +22,7 @@ struct CloudKitTasksService {
     func fetchTasks(ownerUserID: String) async throws -> [AppTask] {
         let predicate = NSPredicate(format: "ownerUserID == %@", ownerUserID)
         let query = CKQuery(recordType: "Task", predicate: predicate)
-        query.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        
 
         let (matchResults, _) = try await db.records(matching: query, resultsLimit: 200)
 

@@ -9,132 +9,110 @@ import SwiftUI
 struct manView: View {
     @StateObject private var viewModel = manViewModel()
     @State private var showCreateMeeting = false
-    @State private var selectedTab = 1 // Meetings tab selected
+    @State private var selectedTab = 1
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Text("Meetings")
-                        .font(.system(size: 32, weight: .bold))
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        showCreateMeeting = true
-                    }) {
-                        HStack(spacing: 6) {
-                            Text("New")
-                                .font(.system(size: 16, weight: .semibold))
-                            Image(systemName: "plus")
-                                .font(.system(size: 14, weight: .bold))
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color("primary"))
-                        .cornerRadius(20)
+        // ❌ REMOVE NavigationStack - it's already wrapped in HomepageView
+        VStack(spacing: 0) {
+            // Header - Simple version without "My Community"
+            HStack {
+                Text("Meetings")
+                    .font(.system(size: 32, weight: .bold))
+                
+                Spacer()
+                
+                Button(action: {
+                    showCreateMeeting = true
+                }) {
+                    HStack(spacing: 6) {
+                        Text("New")
+                            .font(.system(size: 16, weight: .semibold))
+                        Image(systemName: "plus")
+                            .font(.system(size: 14, weight: .bold))
                     }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color("primary"))
+                    .cornerRadius(20)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
-                
-                Divider()
-                
-                if viewModel.meetings.isEmpty {
-                    // Empty State
-                    VStack(spacing: 16) {
-                        Image(systemName: "calendar.badge.clock")
-                            .font(.system(size: 60))
-                            .foregroundColor(.gray.opacity(0.5))
-                        
-                        Text("No meetings scheduled")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.gray)
-                        
-                        Text("Tap 'New +' to create your first meeting")
-                            .font(.system(size: 14))
-                            .foregroundColor(.gray.opacity(0.7))
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 20) {
-                            // Today Section
-                            if viewModel.hasTodayMeetings {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    HStack {
-                                        Text("Today")
-                                            .font(.system(size: 20, weight: .semibold))
-                                        
-                                        Image(systemName: "chevron.down")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.gray)
-                                    }
-                                    .padding(.horizontal, 20)
-                                    
-                                    ForEach(viewModel.todayMeetings) { meeting in
-                                        MeetingCard(meeting: meeting, viewModel: viewModel)
-                                            .padding(.horizontal, 20)
-                                    }
-                                }
-                                .padding(.top, 20)
-                            }
-                            
-                            // Upcoming Section
-                            if viewModel.hasUpcomingMeetings {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    HStack {
-                                        Text("Upcoming")
-                                            .font(.system(size: 20, weight: .semibold))
-                                        
-                                        Image(systemName: "chevron.down")
-                                            .font(.system(size: 14))
-                                            .foregroundColor(.gray)
-                                    }
-                                    .padding(.horizontal, 20)
-                                    
-                                    ForEach(viewModel.upcomingMeetings) { meeting in
-                                        MeetingCard(meeting: meeting, viewModel: viewModel)
-                                            .padding(.horizontal, 20)
-                                    }
-                                }
-                                .padding(.top, viewModel.hasTodayMeetings ? 20 : 20)
-                            }
-                        }
-                        .padding(.bottom, 100)
-                    }
-                }
-                
-                // Bottom Tab Bar
-                Divider()
-                
-                HStack(spacing: 0) {
-                    TabBarItem(icon: "house.fill", title: "Home", isSelected: selectedTab == 0) {
-                        selectedTab = 0
-                    }
-                    
-                    TabBarItem(icon: "calendar", title: "Meetings", isSelected: selectedTab == 1) {
-                        selectedTab = 1
-                    }
-                    
-                    TabBarItem(icon: "person.circle", title: "Profile", isSelected: selectedTab == 2) {
-                        selectedTab = 2
-                    }
-                }
-                .frame(height: 70)
-                .background(Color.white)
             }
-            .background(Color.white)
-            .navigationBarHidden(true)
-            .sheet(isPresented: $showCreateMeeting) {
-                CreateMeetingView(viewModel: viewModel)
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+            
+            Divider()
+            
+            // Rest of your code stays the same...
+            if viewModel.meetings.isEmpty {
+                VStack(spacing: 16) {
+                    Image(systemName: "calendar.badge.clock")
+                        .font(.system(size: 60))
+                        .foregroundColor(.gray.opacity(0.5))
+                    
+                    Text("No meetings scheduled")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.gray)
+                    
+                    Text("Tap 'New +' to create your first meeting")
+                        .font(.system(size: 14))
+                        .foregroundColor(.gray.opacity(0.7))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        if viewModel.hasTodayMeetings {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("Today")
+                                        .font(.system(size: 20, weight: .semibold))
+                                    
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.horizontal, 20)
+                                
+                                ForEach(viewModel.todayMeetings) { meeting in
+                                    MeetingCard(meeting: meeting, viewModel: viewModel)
+                                        .padding(.horizontal, 20)
+                                }
+                            }
+                            .padding(.top, 20)
+                        }
+                        
+                        if viewModel.hasUpcomingMeetings {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Text("Upcoming")
+                                        .font(.system(size: 20, weight: .semibold))
+                                    
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.horizontal, 20)
+                                
+                                ForEach(viewModel.upcomingMeetings) { meeting in
+                                    MeetingCard(meeting: meeting, viewModel: viewModel)
+                                        .padding(.horizontal, 20)
+                                }
+                            }
+                            .padding(.top, viewModel.hasTodayMeetings ? 20 : 20)
+                        }
+                    }
+                    .padding(.bottom, 100)
+                }
             }
+        }
+        .background(Color.white)
+        .sheet(isPresented: $showCreateMeeting) {
+            CreateMeetingView(viewModel: viewModel)
         }
     }
 }
+
 
 
 // Meeting Card - WITH THREE-DOT MENU
@@ -466,7 +444,7 @@ struct EditMeetingSheet: View {
                 .padding(.bottom, 40)
             }
             .background(Color.white)
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Cancel") {
@@ -479,7 +457,10 @@ struct EditMeetingSheet: View {
                 PlatformPickerView(selectedPlatform: $editedPlatform)
             }
             .sheet(isPresented: $showAttendeePicker) {
-                AttendeePickerView(selectedAttendees: $selectedAttendees)
+                AttendeePickerView(
+                    selectedAttendees: $selectedAttendees,
+                    communityID: meeting.communityID
+                )
             }
             .onAppear {
                 setupInitialValues()
@@ -575,7 +556,7 @@ struct AttendeesListSheet: View {
                 }
             }
             .background(Color.white)
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {

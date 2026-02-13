@@ -55,14 +55,13 @@ struct User: Identifiable {
         self.createdAt = Date()
         self.updatedAt = Date()
         
-        // ✅ NEW - Default privacy settings
+        // Default privacy settings
         self.profileVisible = true
         self.showEmail = false
         self.showPhoneNumber = false
         self.allowInvites = true
         self.shareActivity = true
     }
-    
     init(from record: CKRecord) throws {
         self.id = record.recordID.recordName
         self.givenName = record["givenName"] as? String ?? ""
