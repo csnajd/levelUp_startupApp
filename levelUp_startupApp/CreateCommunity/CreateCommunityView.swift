@@ -46,6 +46,7 @@ struct CreateCommunityView: View {
     @StateObject private var viewModel = CreateCommunityViewModel()
     @Environment(\.dismiss) private var dismiss
     @State private var currentStep = 1
+    @State private var navigateToHome = false  // ✅ ADDED
     
     var body: some View {
         VStack(spacing: 0) {
@@ -61,13 +62,18 @@ struct CreateCommunityView: View {
                 CommunityPermissionsStep(viewModel: viewModel, currentStep: $currentStep)
                     .tag(2)
                 
-                InvitePeopleStep(viewModel: viewModel, currentStep: $currentStep)
+                InvitePeopleStep(viewModel: viewModel, currentStep: $currentStep, navigateToHome: $navigateToHome)  // ✅ ADDED BINDING
                     .tag(3)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut, value: currentStep)
         }
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $navigateToHome) {
+            HomepageView()
+                .environmentObject(AppSession())  // ✅ ADD THIS
+                .navigationBarBackButtonHidden(true)
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("Cancel") {
@@ -288,14 +294,13 @@ struct InvitePeopleStep: View {
     @ObservedObject var viewModel: CreateCommunityViewModel
     @Binding var currentStep: Int
     @Environment(\.dismiss) private var dismiss
+    @Binding var navigateToHome: Bool  // ✅ ADDED
     
     var body: some View {
         VStack(spacing: 24) {
             VStack(alignment: .center, spacing: 8) {
                 Text("Invite People")
                     .font(.system(size: 28, weight: .bold))
-                
-              
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 100)
@@ -406,7 +411,7 @@ struct InvitePeopleStep: View {
                 Spacer()
                 
                 Button("Go to Community") {
-                    dismiss()
+                    navigateToHome = true  // ✅ CHANGED FROM dismiss()
                 }
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
@@ -423,15 +428,12 @@ struct InvitePeopleStep: View {
                     Image(systemName: "person.3.fill")
                         .font(.system(size: 80))
                         .foregroundColor(Color("primary").opacity(0.3))
-//                        .padding(.vertical, 40)
                     
                     Text("You can invite people later from the community settings")
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
-                    
-                    
                 }
                 
                 Spacer()

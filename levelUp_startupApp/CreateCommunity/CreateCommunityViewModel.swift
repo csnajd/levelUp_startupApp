@@ -16,9 +16,6 @@ import Foundation
 import CloudKit
 internal import Combine
 
-
-
-
 @MainActor
 class CreateCommunityViewModel: ObservableObject {
     
@@ -50,15 +47,19 @@ class CreateCommunityViewModel: ObservableObject {
     }
     
     private func createCommunity() async {
+        print("🚀 Starting community creation...")
         isCreating = true
         errorMessage = nil
         
         do {
+            print("📝 Getting user ID...")
             guard let userID = try await cloudKitService.getCurrentUserID() else {
                 throw NSError(domain: "CreateCommunity", code: -1, userInfo: [NSLocalizedDescriptionKey: "Could not get user ID"])
             }
+            print("✅ User ID: \(userID)")
             
             let code = Community.generateInviteCode()
+            print("🔑 Generated invite code: \(code)")
             
             let community = Community(
                 name: communityName,
@@ -78,7 +79,12 @@ class CreateCommunityViewModel: ObservableObject {
                 adminIDs: [userID]
             )
             
+            print("💾 Calling saveCommunity...")
+            
+            // Call saveCommunity directly without timeout wrapper for now
             let savedCommunity = try await cloudKitService.saveCommunity(community)
+            
+            print("✅ Community saved successfully!")
             
             inviteCode = savedCommunity.inviteCode
             inviteLink = "levelup://join/\(savedCommunity.inviteCode)"
@@ -86,10 +92,23 @@ class CreateCommunityViewModel: ObservableObject {
             
             isCreating = false
             communityCreated = true
+            print("🎉 Community creation complete!")
             
-        } catch {
-            errorMessage = error.localizedDescription
+        } catch let error as NSError {
+            print("❌ Error creating community: \(error)")
+            print("❌ Error domain: \(error.domain)")
+            print("❌ Error code: \(error.code)")
+            print("❌ Error description: \(error.localizedDescription)")
+            
+            if let ckError = error as? CKError {
+                print("❌ CloudKit error: \(ckError.errorCode)")
+                errorMessage = "CloudKit Error: \(ckError.localizedDescription)"
+            } else {
+                errorMessage = "Error: \(error.localizedDescription)"
+            }
+            
             isCreating = false
+            communityCreated = false
         }
     }
 }

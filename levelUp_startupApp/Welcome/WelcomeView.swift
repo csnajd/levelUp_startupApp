@@ -11,13 +11,14 @@
 //
 //  Created on 2026-02-10
 //
-
 import SwiftUI
 
 struct WelcomeView: View {
     @StateObject private var viewModel = WelcomeViewModel()
     @State private var showCreateCommunity = false
     @State private var showJoinCommunity = false
+    @State private var showProfile = false  // ✅ ADDED
+    @EnvironmentObject var session: AppSession  // ✅ ADDED
     
     var body: some View {
         NavigationStack {
@@ -29,7 +30,7 @@ struct WelcomeView: View {
                     // Header
                     HStack {
                         Button(action: {
-                            // Profile action
+                            showProfile = true  // ✅ CHANGED
                         }) {
                             Image(systemName: "person.circle")
                                 .font(.system(size: 28))
@@ -52,7 +53,7 @@ struct WelcomeView: View {
                     Spacer()
                     
                     // Illustration
-                    Image("image1") // Make sure to add this to Assets
+                    Image("image1")
                         .resizable()
                         .scaledToFit()
                         .frame(height: 300)
@@ -105,7 +106,86 @@ struct WelcomeView: View {
                 CreateCommunityView()
             }
             .navigationDestination(isPresented: $showJoinCommunity) {
-//                JoinCommunityView()
+                // ⚠️ TEMPORARY - Replace with JoinCommunityView() when your friend finishes it
+                HomepageView()
+                    .navigationBarBackButtonHidden(true)
+            }
+            .sheet(isPresented: $showProfile) {  // ✅ ADDED
+                QuickProfileView()
+                    .environmentObject(session)
+            }
+        }
+    }
+}
+
+// ✅ ADDED - Quick Profile Sheet
+struct QuickProfileView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var session: AppSession
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                // Profile Picture
+                Circle()
+                    .fill(Color(.systemGray5))
+                    .frame(width: 100, height: 100)
+                    .overlay(
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.white)
+                    )
+                    .padding(.top, 40)
+                
+                // Name
+                VStack(spacing: 8) {
+                    Text("\(session.givenName) \(session.familyName)")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(session.givenName.isEmpty ? .gray : .black)
+                    
+                    if session.givenName.isEmpty {
+                        Text("No name available")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                // Email
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Email")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.secondary)
+                    
+                    HStack {
+                        Text(session.email.isEmpty ? "No email" : session.email)
+                            .font(.system(size: 16))
+                            .foregroundColor(session.email.isEmpty ? .gray : .black)
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal, 24)
+                
+                Spacer()
+                
+                Text("This information was fetched from your Apple ID")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 20)
+            }
+            .navigationTitle("Your Profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color("primary"))
+                }
             }
         }
     }
@@ -113,4 +193,5 @@ struct WelcomeView: View {
 
 #Preview {
     WelcomeView()
+        .environmentObject(AppSession())
 }

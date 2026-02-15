@@ -9,8 +9,7 @@ class LogInViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
-    // ✅ Using shared singleton instance
-    private let cloud = CloudKitServices.shared
+    private let cloudkit = Cloudkit.shared
 
     func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         request.requestedScopes = [.fullName, .email]
@@ -36,43 +35,34 @@ class LogInViewModel: ObservableObject {
     private func handleAppleCredential(_ credential: ASAuthorizationAppleIDCredential, session: AppSession) async {
 
         let userID = credential.user
-        let email = credential.email
-        let givenName = credential.fullName?.givenName
-        let familyName = credential.fullName?.familyName
+        let email = credential.email ?? ""
+        let givenName = credential.fullName?.givenName ?? ""
+        let familyName = credential.fullName?.familyName ?? ""
 
-        // ✅ For now, just save to session without CloudKit
-        // We'll implement CloudKit user profile saving later
+        // ✅ Save to session first
         session.saveUserID(userID)
-        session.givenName = givenName ?? ""
-        session.familyName = familyName ?? ""
-        session.email = email ?? ""
+        session.givenName = givenName
+        session.familyName = familyName
+        session.email = email
+
+        // ✅ SAVE TO CLOUDKIT
+        do {
+            var user = User(
+                givenName: givenName,
+                familyName: familyName,
+                email: email,
+                appleUserID: userID
+            )
+            
+            _ = try await cloudkit.saveUserProfile(user)
+            print("✅ Profile saved to CloudKit successfully")
+            
+        } catch {
+            print("⚠️ CloudKit save failed:", error.localizedDescription)
+            // Don't block login if CloudKit fails
+        }
 
         isLoading = false
-        
-        /* TODO: Implement CloudKit user profile save when ready
-        do {
-            // 1) Save/Update in CloudKit
-            try await cloud.upsertUserProfile(
-                appleUserID: userID,
-                email: email,
-                givenName: givenName,
-                familyName: familyName
-            )
-
-            // 2) Fetch to confirm + fill session
-            let user = try await cloud.fetchUserProfile(appleUserID: userID)
-
-            session.saveUserID(userID)
-            session.givenName = user?.givenName ?? (givenName ?? "")
-            session.familyName = user?.familyName ?? (familyName ?? "")
-            session.email = user?.email ?? (email ?? "")
-
-            isLoading = false
-
-        } catch {
-            print("CloudKit error:", error)
-        }
-        */
     }
 
     private func fail(with message: String) {

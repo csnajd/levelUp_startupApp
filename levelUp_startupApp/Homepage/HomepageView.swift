@@ -10,153 +10,180 @@ struct HomepageView: View {
     @StateObject private var viewModel = HomepageViewModel()
     @State private var showMenu = false
     @State private var selectedTab = 0
+    @EnvironmentObject var session: AppSession  // ✅ ADDED
     
     var body: some View {
         NavigationStack {
             ZStack {
                 VStack(spacing: 0) {
-                    // Header
-                    VStack(spacing: 0) {
-                        HStack {
-                            Text(viewModel.communityName)
-                                .font(.system(size: 32, weight: .bold))
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    showMenu.toggle()
-                                }
-                            }) {
-                                Image(systemName: "line.3.horizontal")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(.black)
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 16)
-                        
-                        Divider()
-                            .background(Color("primary"))
-                            .frame(height: 2)
-                    }
-                    .background(Color.white)
-                    
-                    ScrollView {
-                        VStack(spacing: 20) {  // Changed from 16 to 20
-                            // Create Project Button
-                            Button(action: {
-                                // Navigate to create project
-                            }) {
-                                HStack {
-                                    Text("Create Project")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundColor(.black)
-                                    
-                                    Text("+")
-                                        .font(.system(size: 24, weight: .medium))
-                                        .foregroundColor(.black)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 28)
-                                        .fill(Color("primary2"))
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 28)
-                                        .stroke(Color("primary"), lineWidth: 2)
-                                )
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.top, 20)  // Changed from 16 to 20
-                            
-                            // Active Projects Section
-                            if viewModel.hasActiveProjects {
-                                ForEach(viewModel.activeProjects) { project in
-                                    ProjectCard(project: project)
-                                        .padding(.horizontal, 20)
-                                }
-                            } else {
-                                EmptyProjectCard()
-                                    .padding(.horizontal, 20)
-                            }
-                            
-                            // Pending Tasks Section
-                            VStack(spacing: 0) {
+                    // Header - ONLY show on Home tab (selectedTab == 0)
+                    if selectedTab == 0 {
+                        VStack(spacing: 0) {
+                            HStack {
+                                Text(viewModel.communityName)
+                                    .font(.system(size: 32, weight: .bold))
+                                
+                                Spacer()
+                                
                                 Button(action: {
                                     withAnimation(.easeInOut(duration: 0.3)) {
-                                        viewModel.showBlockedProjects.toggle()
+                                        showMenu.toggle()
                                     }
                                 }) {
-                                    HStack {
-                                        Text("Pending")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(.black)
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: viewModel.showBlockedProjects ? "chevron.up" : "chevron.down")
-                                            .foregroundColor(.black)
-                                            .font(.system(size: 14, weight: .bold))
-                                    }
-                                    .padding()
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 28)
-                                            .fill(Color("primary2"))
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 28)
-                                            .stroke(Color("primary"), lineWidth: 2)
-                                    )
-                                }
-                                .padding(.horizontal, 20)
-                                
-                                if viewModel.showBlockedProjects {
-                                    if viewModel.hasBlockedProjects {
-                                        VStack(spacing: 0) {
-                                            ForEach(Array(viewModel.blockedProjects.enumerated()), id: \.element.id) { index, project in
-                                                BlockedProjectRow(project: project)
-                                                
-                                                if index < viewModel.blockedProjects.count - 1 {
-                                                    Divider()
-                                                        .padding(.leading, 70)
-                                                }
-                                            }
-                                        }
-                                        .background(Color("grey"))
-                                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                        )
-                                        .padding(.horizontal, 20)
-                                        .padding(.top, 8)  // Changed from 4 to 8
-                                    } else {
-                                        VStack(spacing: 8) {
-                                            Text("No pending tasks")
-                                                .font(.system(size: 16))
-                                                .foregroundColor(.gray)
-                                            
-                                            Text("Tasks that need attention will appear here")
-                                                .font(.system(size: 12))
-                                                .foregroundColor(.gray.opacity(0.7))
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 32)
-                                        .background(Color("grey"))
-                                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                        )
-                                        .padding(.horizontal, 20)
-                                        .padding(.top, 8)  // Changed from 4 to 8
-                                    }
+                                    Image(systemName: "line.3.horizontal")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(.black)
                                 }
                             }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
                             
-                            Spacer(minLength: 100)
+                            Divider()
+                                .background(Color("primary"))
+                                .frame(height: 2)
+                        }
+                        .background(Color.white)
+                    }
+                    
+                    // ✅ MAIN CONTENT - SWITCHES BASED ON TAB
+                    ZStack {
+                        if selectedTab == 0 {
+                            // HOME TAB
+                            ScrollView {
+                                VStack(spacing: 32) {
+                                    // Create Project Button
+                                    // Create Project Button
+                                    Button(action: {
+                                        // Navigate to create project
+                                    }) {
+                                        HStack {
+                                            Text("Create Project")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundColor(.black)
+                                            
+                                            Text("+")
+                                                .font(.system(size: 24, weight: .medium))
+                                                .foregroundColor(.black)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 56)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 28)
+                                                .fill(Color("primary2"))
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 28)
+                                                .stroke(Color("primary"), lineWidth: 2)
+                                        )
+                                    }
+                                    .padding(.horizontal, 20)
+                                    .padding(.top, 24)
+                                    
+                                    // Active Projects Section
+                                    if viewModel.hasActiveProjects {
+                                        VStack(spacing: 16) {
+                                            ForEach(viewModel.activeProjects) { project in
+                                                ProjectCard(project: project)
+                                                    .padding(.horizontal, 20)
+                                            }
+                                        }
+                                    } else {
+                                        EmptyProjectCard()
+                                            .padding(.horizontal, 20)
+                                    }
+                                    
+                                    // Pending Tasks Section
+                                    VStack(spacing: 0) {
+                                        Button(action: {
+                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                                viewModel.showBlockedProjects.toggle()
+                                            }
+                                        }) {
+                                            HStack {
+                                                Text("Pending")
+                                                    .font(.system(size: 18, weight: .medium))
+                                                    .foregroundColor(.black)
+                                                
+                                                Spacer()
+                                                
+                                                Image(systemName: viewModel.showBlockedProjects ? "chevron.up" : "chevron.down")
+                                                    .foregroundColor(.black)
+                                                    .font(.system(size: 14, weight: .bold))
+                                            }
+                                            .padding()
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 28)
+                                                    .fill(Color("primary2"))
+                                            )
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 28)
+                                                    .stroke(Color("primary"), lineWidth: 2)
+                                            )
+                                        }
+                                        .padding(.horizontal, 20)
+                                        
+                                        if viewModel.showBlockedProjects {
+                                            if viewModel.hasBlockedProjects {
+                                                VStack(spacing: 0) {
+                                                    ForEach(Array(viewModel.blockedProjects.enumerated()), id: \.element.id) { index, project in
+                                                        BlockedProjectRow(project: project)
+                                                        
+                                                        if index < viewModel.blockedProjects.count - 1 {
+                                                            Divider()
+                                                                .padding(.leading, 70)
+                                                        }
+                                                    }
+                                                }
+                                                .background(Color("grey"))
+                                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 16)
+                                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                                )
+                                                .padding(.horizontal, 20)
+                                                .padding(.top, 16)
+                                            } else {
+                                                VStack(spacing: 8) {
+                                                    Text("No pending tasks")
+                                                        .font(.system(size: 16))
+                                                        .foregroundColor(.gray)
+                                                    
+                                                    Text("Tasks that need attention will appear here")
+                                                        .font(.system(size: 12))
+                                                        .foregroundColor(.gray.opacity(0.7))
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                                .padding(.vertical, 40)
+                                                .background(Color("grey"))
+                                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 16)
+                                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                                )
+                                                .padding(.horizontal, 20)
+                                                .padding(.top, 16)
+                                            }
+                                        }
+                                    }
+                                    
+                                    Spacer(minLength: 120)
+                                }
+                            }
+                        }
+                        
+                        if selectedTab == 1 {
+                            // MEETINGS TAB - Show without duplicate header
+                            manView()
+                        }
+                        
+                        if selectedTab == 2 {
+                            // PROFILE TAB - YOUR TASKS
+                            ProfileTasksSummaryView(
+                                vm: ProfileTasksSummaryViewModel(
+                                    ownerUserID: session.appleUserID ?? "",  // ✅ Fixed
+                                    displayName: "\(session.givenName) \(session.familyName)".trimmingCharacters(in: .whitespaces)
+                                )
+                            )
                         }
                     }
                     .background(Color.white)
@@ -341,35 +368,6 @@ struct SideMenuView: View {
             .task {
                 await userProfile.loadProfile()
             }
-        }
-    }
-}
-
-// Menu Item Button (kept from hers, but not used in SideMenuView)
-struct MenuItemButton: View {
-    let icon: String
-    let iconColor: Color
-    let title: String
-    var titleColor: Color = .black
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .foregroundColor(iconColor)
-                    .frame(width: 30)
-                
-                Text(title)
-                    .font(.system(size: 18))
-                    .foregroundColor(titleColor)
-                
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
-            .background(Color.clear)
         }
     }
 }
@@ -573,4 +571,5 @@ struct TabBarItem: View {
 
 #Preview {
     HomepageView()
+        .environmentObject(AppSession())
 }

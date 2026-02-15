@@ -11,50 +11,40 @@ internal import Combine
 @MainActor
 class HomepageViewModel: ObservableObject {
     @Published var projects: [Project] = []
-    @Published var communityName = "Code Lab"  // Changed from "My Community" to "Code Lab"
+    @Published var communityName = "My Community"
     @Published var showBlockedProjects = false
     @Published var isLoadingProjects = false
-    @Published var selectedCommunity: Community?
+    @Published var currentCommunity: Community?
     
     private let cloudKitService = CloudKitServices.shared
     
     init() {
         loadProjects()
+        Task {
+            await loadCommunityName()
+        }
     }
     
     func loadProjects() {
-        // Default: Empty state for new communities
         projects = ProjectData.emptyProjects
-        
-        // If you have a selected community, load its name
-        if let community = selectedCommunity {
-            communityName = community.name
-            
-            // TODO: Uncomment when ready to fetch from CloudKit
-            // Task {
-            //     await fetchProjectsFromCloudKit(communityID: community.id)
-            // }
-        }
     }
     
-    func fetchProjectsFromCloudKit(communityID: String) async {
-        isLoadingProjects = true
-        
+    func loadCommunityName() async {
         do {
-            projects = try await cloudKitService.fetchCommunityProjects(communityID: communityID)
-            isLoadingProjects = false
+            let communities = try await cloudKitService.fetchUserCommunities()
+            
+            if let firstCommunity = communities.first {
+                communityName = firstCommunity.name
+                currentCommunity = firstCommunity
+                print("✅ Loaded community: \(firstCommunity.name)")
+            } else {
+                communityName = "No Community"
+                print("⚠️ No communities found for user")
+            }
         } catch {
-            print("Error loading projects: \(error)")
-            isLoadingProjects = false
-            // Fall back to empty state
-            projects = []
+            communityName = "My Community"
+            print("❌ Error loading community: \(error)")
         }
-    }
-    
-    func setCommunity(_ community: Community) {
-        selectedCommunity = community
-        communityName = community.name
-        loadProjects()
     }
     
     var activeProjects: [Project] {

@@ -207,7 +207,7 @@ struct ViewProfilePage: View {
                             await viewModel.saveProfile()
                             if viewModel.savedSuccessfully {
                                 await UserProfileManager.shared.loadProfile()
-                                dismiss()  // ✅ CHANGED - Dismisses the entire page
+                                dismiss()  // ✅ Go back after saving
                             }
                         }
                     }) {
@@ -266,7 +266,7 @@ struct ViewProfilePage: View {
             }
         }
         .task {
-            await viewModel.loadExistingProfile()
+            await viewModel.loadExistingProfile()  // ✅ Load from CloudKit
         }
     }
 }

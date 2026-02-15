@@ -1,8 +1,8 @@
 //
-//  profileViewModel.swift
+//  EditProfileViewModel.swift
 //  levelUp_startupApp
 //
-//  Created by Danyah ALbarqawi on 02/02/2026.
+//  Created by Ghala Alsalem on 12/02/2026.
 //
 
 
@@ -25,20 +25,16 @@ class EditProfileViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var savedSuccessfully = false
     
-    private let cloudKitService = CloudKitServices.shared
+    private let cloudKitService = Cloudkit.shared
     
     var isSaveButtonEnabled: Bool {
-        !givenName.isEmpty && !familyName.isEmpty && !email.isEmpty  // ✅ FIXED - Added email check
+        true  // Always enabled for editing
     }
     
     func saveProfile() async {
-        guard isSaveButtonEnabled else {
-            errorMessage = "Please fill in all required fields"
-            return
-        }
-        
         isLoading = true
         errorMessage = nil
+        savedSuccessfully = false
         
         do {
             guard let appleUserID = try await cloudKitService.getCurrentUserID() else {
@@ -51,7 +47,7 @@ class EditProfileViewModel: ObservableObject {
                 familyName: familyName,
                 gender: gender,
                 email: email,
-                phoneNumber: phoneNumber,  // ✅ Include phone number
+                phoneNumber: phoneNumber,
                 appleUserID: appleUserID
             )
             user.profileImage = profileImage
@@ -64,6 +60,7 @@ class EditProfileViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
+            savedSuccessfully = false
         }
     }
     

@@ -8,7 +8,7 @@ struct levelUp_startupAppApp: App {
         WindowGroup {
 
 
-            LogInView() // إذا شاشتك WelcomeView بدليها
+            WelcomeView() // إذا شاشتك WelcomeView بدليها
                 .environmentObject(session)
  
         }
