@@ -1,18 +1,7 @@
-//
-//  UserProfileManager.swift
-//  levelUp_startupApp
-//
-//  Created by Ghala Alsalem on 10/02/2026.
-//
-
-
 import Foundation
 import SwiftUI
 import CloudKit
 internal import Combine
-
-
-
 
 @MainActor
 class UserProfileManager: ObservableObject {
@@ -25,10 +14,9 @@ class UserProfileManager: ObservableObject {
     @Published var profileImage: UIImage?
     @Published var isLoading = false
     
-    private let cloudKitService = CloudKitServices.shared
+    private let cloudKitService = CloudKitService.shared
     
     private init() {
-        // Load profile on init
         Task {
             await loadProfile()
         }
@@ -64,7 +52,6 @@ class UserProfileManager: ObservableObject {
                 return
             }
             
-            // Use upsert to save/update profile
             try await cloudKitService.upsertUserProfile(
                 appleUserID: appleUserID,
                 email: email.isEmpty ? nil : email,

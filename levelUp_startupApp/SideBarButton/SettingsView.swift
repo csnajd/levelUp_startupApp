@@ -68,12 +68,12 @@ struct SettingsButton: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 22))
-                .foregroundColor(Color("primary"))
+                .foregroundColor(Color("primary1"))
                 .frame(width: 30)
             
             Text(title)
                 .font(.system(size: 20, weight: .medium))
-                .foregroundColor(Color("primary"))
+                .foregroundColor(Color("primary1"))
             
             Spacer()
             
@@ -86,7 +86,7 @@ struct SettingsButton: View {
         .background(Color.white)
         .overlay(
             RoundedRectangle(cornerRadius: 28)
-                .stroke(Color("primary"), lineWidth: 2)
+                .stroke(Color("primary1"), lineWidth: 2)
         )
     }
 }

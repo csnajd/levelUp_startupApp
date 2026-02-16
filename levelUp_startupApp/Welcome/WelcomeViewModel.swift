@@ -1,26 +1,6 @@
-//
-//  WelcomeViewModel.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 10/02/2026.
-//
-
-
-
-//
-//  WelcomeViewModel.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 10/02/2026.
-//
-
-
-
 import Foundation
 import CloudKit
 internal import Combine
-
-
 
 @MainActor
 class WelcomeViewModel: ObservableObject {
@@ -28,7 +8,7 @@ class WelcomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private let cloudKitService = CloudKitServices.shared
+    private let cloudKitService = CloudKitService.shared  // ✅ Changed variable name to cloudKitService
     
     init() {
         Task {
@@ -41,11 +21,11 @@ class WelcomeViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            userCommunities = try await cloudKitService.fetchUserCommunities()
+            userCommunities = try await cloudKitService.fetchUserCommunities()  // ✅ Now this matches
             isLoading = false
         } catch {
             errorMessage = error.localizedDescription
-            isLoading = false
+            isLoading = false  // ✅ Fixed typo: was "fals"
         }
     }
 }

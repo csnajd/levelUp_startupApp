@@ -1,11 +1,3 @@
-//
-//  AppDestination.swift
-//  levelUp_startupApp
-//
-//  Created by Ghala Alsalem on 13/02/2026.
-//
-
-
 import SwiftUI
 internal import Combine
 
@@ -14,49 +6,50 @@ enum AppDestination: Hashable {
     case createCommunity
     case joinCommunity
     case profile
+    case homepage(communityID: String, userID: String, userName: String)
 }
 
 @MainActor
-class NavigationManager: ObservableObject {
+final class NavigationManager: ObservableObject {
+
     @Published var path = NavigationPath()
     @Published var showCreateCommunitySheet = false
     @Published var showJoinCommunitySheet = false
     @Published var showProfileSheet = false
     @Published var pendingInviteCode: String?
-    
+
     static let shared = NavigationManager()
-    
     private init() {}
-    
+
     func navigateTo(_ destination: AppDestination) {
         path.append(destination)
     }
-    
+
+    func navigateToHomepage(communityID: String, userID: String, userName: String) {
+        // ✅ تصفير المسار بأمان
+        path = NavigationPath()
+        path.append(AppDestination.homepage(communityID: communityID, userID: userID, userName: userName))
+
+    }
+
     func navigateBack() {
-        path.removeLast()
+        if !path.isEmpty { path.removeLast() }
     }
-    
+
     func navigateToRoot() {
-        path.removeLast(path.count)
+        path = NavigationPath()
     }
-    
-    func showCreateCommunity() {
-        showCreateCommunitySheet = true
-    }
-    
-    func showJoinCommunity() {
-        showJoinCommunitySheet = true
-    }
-    
+
+    func showCreateCommunity() { showCreateCommunitySheet = true }
+    func showJoinCommunity() { showJoinCommunitySheet = true }
+
     func showJoinCommunityWithCode(_ code: String) {
         pendingInviteCode = code
         showJoinCommunitySheet = true
     }
-    
-    func showProfile() {
-        showProfileSheet = true
-    }
-    
+
+    func showProfile() { showProfileSheet = true }
+
     func dismissSheet() {
         showCreateCommunitySheet = false
         showJoinCommunitySheet = false
@@ -64,3 +57,4 @@ class NavigationManager: ObservableObject {
         pendingInviteCode = nil
     }
 }
+

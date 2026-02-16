@@ -1,11 +1,3 @@
-//
-//  CommunityView.swift
-//  levelUp_startupApp
-//
-//  Created by Ghala Alsalem on 10/02/2026.
-//
-
-
 import SwiftUI
 
 struct CommunityView: View {
@@ -36,7 +28,7 @@ struct CommunityView: View {
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(width: 40, height: 40)
-                            .background(Color("primary"))
+                            .background(Color("primary1"))
                             .clipShape(Circle())
                     }
                 }
@@ -154,11 +146,11 @@ struct MemberCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(member.fullName)
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Color("primary"))
+                    .foregroundColor(Color("primary1"))
                 
                 Text(member.jobTitle)
                     .font(.system(size: 14))
-                    .foregroundColor(Color("primary").opacity(0.7))
+                    .foregroundColor(Color("primary1").opacity(0.7))
             }
             
             Spacer()
@@ -168,12 +160,12 @@ struct MemberCard: View {
         .background(Color.white)
         .overlay(
             RoundedRectangle(cornerRadius: 28)
-                .stroke(Color("primary"), lineWidth: 2)
+                .stroke(Color("primary1"), lineWidth: 2)
         )
     }
 }
 
-// ✅ UPDATED - Add Member View with CloudKit Integration
+// ✅ FIXED - Add Member View with CloudKit Integration
 struct AddMemberView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var inviteCode = ""
@@ -182,7 +174,7 @@ struct AddMemberView: View {
     @State private var showCopiedMessage = false
     @State private var copiedItem: CopiedItem?
     
-    private let cloudKitService = CloudKitServices.shared
+    private let cloudKitService = CloudKitService.shared  // ✅ FIXED: Changed from cloudService
     
     enum CopiedItem {
         case code, link
@@ -217,7 +209,7 @@ struct AddMemberView: View {
                                 HStack(spacing: 12) {
                                     Text(inviteCode.isEmpty ? "Loading..." : inviteCode)
                                         .font(.system(size: 24, weight: .bold))
-                                        .foregroundColor(Color("primary"))
+                                        .foregroundColor(Color("primary1"))
                                     
                                     Spacer()
                                     
@@ -232,13 +224,13 @@ struct AddMemberView: View {
                                         .foregroundColor(.white)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 10)
-                                        .background(copiedItem == .code ? Color.green : Color("primary"))
+                                        .background(copiedItem == .code ? Color.green : Color("primary1"))
                                         .cornerRadius(20)
                                     }
                                     .disabled(inviteCode.isEmpty)
                                 }
                                 .padding(16)
-                                .background(Color("primary").opacity(0.1))
+                                .background(Color("primary1").opacity(0.1))
                                 .cornerRadius(16)
                             }
                             .padding(.horizontal, 24)
@@ -256,7 +248,7 @@ struct AddMemberView: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .lineLimit(2)
                                         .padding(16)
-                                        .background(Color("primary").opacity(0.1))
+                                        .background(Color("primary1").opacity(0.1))
                                         .cornerRadius(16)
                                     
                                     HStack(spacing: 12) {
@@ -271,7 +263,7 @@ struct AddMemberView: View {
                                             .foregroundColor(.white)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 12)
-                                            .background(copiedItem == .link ? Color.green : Color("primary"))
+                                            .background(copiedItem == .link ? Color.green : Color("primary1"))
                                             .cornerRadius(20)
                                         }
                                         .disabled(inviteLink.isEmpty)
@@ -284,13 +276,13 @@ struct AddMemberView: View {
                                                 Text("Share")
                                             }
                                             .font(.system(size: 14, weight: .semibold))
-                                            .foregroundColor(Color("primary"))
+                                            .foregroundColor(Color("primary1"))
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 12)
                                             .background(Color.white)
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 20)
-                                                    .stroke(Color("primary"), lineWidth: 2)
+                                                    .stroke(Color("primary1"), lineWidth: 2)
                                             )
                                         }
                                         .disabled(inviteLink.isEmpty)
@@ -303,7 +295,7 @@ struct AddMemberView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "info.circle.fill")
-                                        .foregroundColor(Color("primary"))
+                                        .foregroundColor(Color("primary1"))
                                     Text("How to invite members:")
                                         .font(.system(size: 14, weight: .semibold))
                                 }
@@ -334,7 +326,7 @@ struct AddMemberView: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(Color("primary"))
+                    .foregroundColor(Color("primary1"))
                     .fontWeight(.semibold)
                 }
             }
@@ -348,7 +340,7 @@ struct AddMemberView: View {
         isLoading = true
         
         do {
-            let communities = try await cloudKitService.fetchUserCommunities()
+            let communities = try await cloudKitService.fetchUserCommunities()  // ✅ Now matches the variable name
             
             if let community = communities.first {
                 inviteCode = community.inviteCode

@@ -170,7 +170,7 @@ struct ViewProfilePage: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 8)
-                            .background(Color("primary"))
+                            .background(Color("primary1"))
                             .cornerRadius(20)
                         }
                         .padding()
@@ -216,7 +216,7 @@ struct ViewProfilePage: View {
                                 .tint(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(Color("primary"))
+                                .background(Color("primary1"))
                                 .cornerRadius(28)
                         } else {
                             Text("save")
@@ -224,7 +224,7 @@ struct ViewProfilePage: View {
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(Color("primary"))
+                                .background(Color("primary1"))
                                 .cornerRadius(28)
                         }
                     }
@@ -245,12 +245,12 @@ struct ViewProfilePage: View {
                             await viewModel.loadExistingProfile()
                         }
                     }
-                    .foregroundColor(Color("primary"))
+                    .foregroundColor(Color("primary1"))
                 } else {
                     Button("Edit") {
                         isEditMode = true
                     }
-                    .foregroundColor(Color("primary"))
+                    .foregroundColor(Color("primary1"))
                 }
             }
         }

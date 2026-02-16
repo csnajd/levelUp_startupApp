@@ -1,498 +1,355 @@
-//
-//  CreateCommunityView.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 10/02/2026.
-//
-
-//
-//  CreateCommunityView.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-10
-//
-
-//
-//  CreateCommunityView.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-10
-//
-
-//
-//  CreateCommunityView.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-10
-//
-
-//
-//  CreateCommunityView.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-11
-//
-
-//
-//  CreateCommunityView.swift
-//  levelUp_startupApp
-//
-//  Created on 2026-02-11
-//
-
 import SwiftUI
-
 struct CreateCommunityView: View {
-    @StateObject private var viewModel = CreateCommunityViewModel()
     @Environment(\.dismiss) private var dismiss
-    @State private var currentStep = 1
-    @State private var navigateToHome = false  // ✅ ADDED
+    @EnvironmentObject var session: AppSession
+    @StateObject private var viewModel = CreateCommunityViewModel()
+    @State private var navigateToHomepage = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            ProgressView(value: Double(currentStep), total: 3)
-                .tint(Color("primary"))
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
+        ZStack {
+            Color(.systemBackground)
+                .ignoresSafeArea()
             
-            TabView(selection: $currentStep) {
-                CommunityNameStep(viewModel: viewModel, currentStep: $currentStep)
-                    .tag(1)
+            VStack(spacing: 0) {
+                // Progress Bar
+                HStack(spacing: 8) {
+                    ForEach(0..<3) { index in
+                        Rectangle()
+                            .fill(index <= viewModel.currentStep ? Color("primary1") : Color.gray.opacity(0.3))
+                            .frame(height: 4)
+                    }
+                }
+                .padding(.horizontal, 56)
+                .padding(.top, 16)
                 
-                CommunityPermissionsStep(viewModel: viewModel, currentStep: $currentStep)
-                    .tag(2)
-                
-                InvitePeopleStep(viewModel: viewModel, currentStep: $currentStep, navigateToHome: $navigateToHome)  // ✅ ADDED BINDING
-                    .tag(3)
+                // Content based on current step
+                switch viewModel.currentStep {
+                case 0:
+                    Step1_CommunityName(viewModel: viewModel)
+                case 1:
+                    Step2_Permissions(viewModel: viewModel)
+                case 2:
+                    Step3_InvitePeople(
+                        viewModel: viewModel,
+                        onComplete: {
+                            navigateToHomepage = true
+                        }
+                    )
+                default:
+                    EmptyView()
+                }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .animation(.easeInOut, value: currentStep)
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(isPresented: $navigateToHome) {
-            HomepageView()
-                .environmentObject(AppSession())  // ✅ ADD THIS
-                .navigationBarBackButtonHidden(true)
-        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
-                    dismiss()
+                if viewModel.currentStep == 0 {
+                    Button("Cancel") {
+                        dismiss()
+                    }
                 }
-                .foregroundColor(Color("primary"))
+            }
+        }
+        .navigationDestination(isPresented: $navigateToHomepage) {
+            // ✅ FIXED: Pass the required parameters
+            if let communityID = viewModel.createdCommunityID {
+                HomepageView(
+                    communityID: communityID,
+                    communityName: viewModel.communityName
+                )
+                .navigationBarBackButtonHidden(true)
             }
         }
     }
 }
 
 // MARK: - Step 1: Community Name
-struct CommunityNameStep: View {
+struct Step1_CommunityName: View {
     @ObservedObject var viewModel: CreateCommunityViewModel
-    @Binding var currentStep: Int
     
     var body: some View {
         VStack(spacing: 24) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Create Community")
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.system(size: 32, weight: .bold))
+                    .padding(.horizontal, 24)
                 
-                Text("Give your community a name")
-                    .font(.system(size: 16))
+                Text("Manage the branding for your community profile.")
+                    .font(.system(size: 14))
                     .foregroundColor(.secondary)
+                    .padding(.horizontal, 24)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 24)
             .padding(.top, 40)
             
-            VStack(alignment: .leading, spacing: 8) {
+            Spacer()
+            
+            VStack(alignment: .leading, spacing: 12) {
                 Text("Community Name")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 16, weight: .semibold))
                 
-                TextField("Enter community name", text: $viewModel.communityName)
+                TextField("e.g. Fiker company", text: $viewModel.communityName)
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
-                    .font(.system(size: 16))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color("primary1"), lineWidth: 2)
+                    )
             }
             .padding(.horizontal, 24)
             
             Spacer()
             
-            Button("Next") {
-                withAnimation {
-                    currentStep = 2
-                }
+            Button(action: {
+                viewModel.nextStep()
+            }) {
+                Text("Next")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(viewModel.communityName.isEmpty ? Color.gray : Color("primary1"))
+                    .cornerRadius(25)
             }
-            .font(.system(size: 18, weight: .semibold))
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(viewModel.communityName.isEmpty ? Color.gray : Color("primary"))
-            .cornerRadius(28)
             .disabled(viewModel.communityName.isEmpty)
             .padding(.horizontal, 24)
-            .padding(.bottom, 32)
+            .padding(.bottom, 40)
         }
     }
 }
 
 // MARK: - Step 2: Permissions
-struct CommunityPermissionsStep: View {
+struct Step2_Permissions: View {
     @ObservedObject var viewModel: CreateCommunityViewModel
-    @Binding var currentStep: Int
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Community Permissions")
-                    .font(.system(size: 28, weight: .bold))
-                
-                Text("Control who can access, post, and manage content\nwithin your community.")
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 24)
-            .padding(.top, 40)
-            .padding(.bottom, 20)
-            
-            ScrollView {
-                VStack(spacing: 28) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Who can join this community?")
-                            .font(.system(size: 16, weight: .semibold))
-                        
-                        PermissionOption(
-                            isSelected: viewModel.anyoneCanJoin,
-                            title: "Anyone in the organization",
-                            action: {
-                                viewModel.anyoneCanJoin = true
-                                viewModel.inviteOnly = false
-                            }
-                        )
-                        
-                        PermissionOption(
-                            isSelected: viewModel.inviteOnly,
-                            title: "Invite only",
-                            action: {
-                                viewModel.anyoneCanJoin = false
-                                viewModel.inviteOnly = true
-                            }
-                        )
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Who can create posts?")
-                            .font(.system(size: 16, weight: .semibold))
-                        
-                        PermissionOption(
-                            isSelected: viewModel.adminsOnlyPost,
-                            title: "Admins only",
-                            action: {
-                                viewModel.adminsOnlyPost = true
-                                viewModel.allMembersPost = false
-                            }
-                        )
-                        
-                        PermissionOption(
-                            isSelected: viewModel.allMembersPost,
-                            title: "All members",
-                            action: {
-                                viewModel.adminsOnlyPost = false
-                                viewModel.allMembersPost = true
-                            }
-                        )
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Who can manage the community?")
-                            .font(.system(size: 16, weight: .semibold))
-                        
-                        PermissionOption(
-                            isSelected: viewModel.adminManaged,
-                            title: "Admins",
-                            action: {
-                                viewModel.adminManaged = true
-                                viewModel.moderatorManaged = false
-                            }
-                        )
-                        
-                        PermissionOption(
-                            isSelected: viewModel.moderatorManaged,
-                            title: "Moderators",
-                            action: {
-                                viewModel.adminManaged = false
-                                viewModel.moderatorManaged = true
-                            }
-                        )
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Additional Settings")
-                            .font(.system(size: 16, weight: .semibold))
-                        
-                        PermissionOption(
-                            isSelected: viewModel.allowFileSharing,
-                            title: "Allow file sharing",
-                            action: {
-                                viewModel.allowFileSharing.toggle()
-                            }
-                        )
-                        
-                        PermissionOption(
-                            isSelected: viewModel.allowComments,
-                            title: "Allow comments",
-                            action: {
-                                viewModel.allowComments.toggle()
-                            }
-                        )
-                    }
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 20)
-            }
-            
-            HStack(spacing: 16) {
-                Button("Previous") {
-                    withAnimation {
-                        currentStep = 1
-                    }
-                }
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(Color("primary"))
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(Color.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 28)
-                        .stroke(Color("primary"), lineWidth: 2)
-                )
-                .cornerRadius(28)
-                
-                Button("Next") {
-                    withAnimation {
-                        currentStep = 3
-                    }
-                }
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(Color("primary"))
-                .cornerRadius(28)
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 32)
-        }
-    }
-}
-
-// MARK: - Step 3: Invite People
-struct InvitePeopleStep: View {
-    @ObservedObject var viewModel: CreateCommunityViewModel
-    @Binding var currentStep: Int
-    @Environment(\.dismiss) private var dismiss
-    @Binding var navigateToHome: Bool  // ✅ ADDED
     
     var body: some View {
         VStack(spacing: 24) {
-            VStack(alignment: .center, spacing: 8) {
-                Text("Invite People")
-                    .font(.system(size: 28, weight: .bold))
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Community Permissions")
+                    .font(.system(size: 32, weight: .bold))
+                    .padding(.horizontal, 24)
+                
+                Text("Control who can access, post, and manage content within your community.")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 24)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 100)
             .padding(.top, 40)
             
-            if viewModel.isCreating {
-                Spacer()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 32) {
+                    PermissionSection(
+                        title: "Who can join this community?",
+                        options: ["Anyone in the organization", "Invite only"],
+                        selectedIndex: viewModel.whoCanJoinIndex,
+                        onSelect: { viewModel.whoCanJoinIndex = $0 }
+                    )
+                    
+                    PermissionSection(
+                        title: "Who can create posts?",
+                        options: ["Admins only", "All members"],
+                        selectedIndex: viewModel.whoCanPostIndex,
+                        onSelect: { viewModel.whoCanPostIndex = $0 }
+                    )
+                    
+                    PermissionSection(
+                        title: "Who can manage the community?",
+                        options: ["Admins", "Moderators"],
+                        selectedIndex: viewModel.whoCanManageIndex,
+                        onSelect: { viewModel.whoCanManageIndex = $0 }
+                    )
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Additional Settings")
+                            .font(.system(size: 18, weight: .semibold))
+                        
+                        CheckboxRow(
+                            title: "Allow file sharing",
+                            isChecked: $viewModel.allowFileSharing
+                        )
+                        
+                        CheckboxRow(
+                            title: "Allow comments",
+                            isChecked: $viewModel.allowComments
+                        )
+                    }
+                }
+                .padding(.horizontal, 24)
+            }
+            
+            HStack(spacing: 12) {
+                Button(action: {
+                    viewModel.previousStep()
+                }) {
+                    Text("Previous")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(Color("primary1"))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color.white)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(Color("primary1"), lineWidth: 2)
+                        )
+                }
+                
+                Button(action: {
+                    viewModel.nextStep()
+                }) {
+                    Text("Next")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color("primary1"))
+                        .cornerRadius(25)
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
+        }
+    }
+}
+// MARK: - Step 3: Invite People
+struct Step3_InvitePeople: View {
+    @ObservedObject var viewModel: CreateCommunityViewModel
+    let onComplete: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Invite People")
+                    .font(.system(size: 32, weight: .bold))
+                    .padding(.horizontal, 24)
+                
+                Text("Share your community invite code")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 24)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 40)
+            
+            Spacer()
+            
+            if viewModel.isLoading {
                 ProgressView()
                     .scaleEffect(1.5)
-                Text("Creating your community...")
-                    .font(.system(size: 16))
-                    .foregroundColor(.secondary)
-                    .padding(.top, 16)
-                Spacer()
-            } else if viewModel.communityCreated {
-                ScrollView {
-                    VStack(spacing: 24) {
-                        VStack(spacing: 12) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 60))
-                                .foregroundColor(.green)
-                            
-                            Text("Community Created!")
-                                .font(.system(size: 24, weight: .bold))
-                            
-                            Text("Share the invite code or link with your team")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.top, 20)
+            } else if let inviteCode = viewModel.generatedInviteCode {
+                VStack(spacing: 24) {
+                    VStack(spacing: 12) {
+                        Text("Your Invite Code")
+                            .font(.system(size: 16, weight: .semibold))
                         
-                        VStack(spacing: 16) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Invite Code")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.secondary)
-                                
-                                HStack {
-                                    Text(viewModel.inviteCode)
-                                        .font(.system(size: 24, weight: .bold))
-                                        .foregroundColor(Color("primary"))
-                                    
-                                    Spacer()
-                                    
-                                    Button {
-                                        UIPasteboard.general.string = viewModel.inviteCode
-                                    } label: {
-                                        Image(systemName: "doc.on.doc")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(Color("primary"))
-                                    }
-                                }
-                                .padding()
-                                .background(Color("primary").opacity(0.1))
-                                .cornerRadius(12)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Invite Link")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.secondary)
-                                
-                                HStack {
-                                    Text(viewModel.inviteLink)
-                                        .font(.system(size: 12))
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(1)
-                                    
-                                    Spacer()
-                                    
-                                    Button {
-                                        UIPasteboard.general.string = viewModel.inviteLink
-                                    } label: {
-                                        Image(systemName: "doc.on.doc")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(Color("primary"))
-                                    }
-                                }
-                                .padding()
-                                .background(Color("primary").opacity(0.1))
-                                .cornerRadius(12)
-                            }
-                            
-                            Button {
-                                shareInvite()
-                            } label: {
-                                HStack {
-                                    Image(systemName: "square.and.arrow.up")
-                                    Text("Share Invite")
-                                }
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Color("primary"))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(Color.white)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 25)
-                                        .stroke(Color("primary"), lineWidth: 2)
-                                )
-                                .cornerRadius(25)
-                            }
-                            .padding(.top, 8)
+                        Text(inviteCode)
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundColor(Color("primary1"))
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                    }
+                    
+                    Button(action: {
+                        UIPasteboard.general.string = inviteCode
+                    }) {
+                        HStack {
+                            Image(systemName: "doc.on.doc")
+                            Text("Copy Invite Code")
                         }
-                        .padding(.horizontal, 24)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color("primary1"))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color.white)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(Color("primary1"), lineWidth: 2)
+                        )
+                    }
+                    
+                    Button(action: {
+                        viewModel.shareInviteLink()
+                    }) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Share Invite Link")
+                        }
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color("primary1"))
+                        .cornerRadius(25)
                     }
                 }
-                
-                Spacer()
-                
-                Button("Go to Community") {
-                    navigateToHome = true  // ✅ CHANGED FROM dismiss()
-                }
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(Color("primary"))
-                .cornerRadius(28)
                 .padding(.horizontal, 24)
-                .padding(.bottom, 32)
-            } else {
-                
-                VStack(spacing: 20) {
-                   
-                    Image(systemName: "person.3.fill")
-                        .font(.system(size: 80))
-                        .foregroundColor(Color("primary").opacity(0.3))
-                    
-                    Text("You can invite people later from the community settings")
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                }
-                
-                Spacer()
-                
-                if let error = viewModel.errorMessage {
-                    Text(error)
-                        .font(.system(size: 14))
-                        .foregroundColor(.red)
-                        .padding(.horizontal, 24)
-                }
-                
-                HStack(spacing: 16) {
-                    Button("Previous") {
-                        withAnimation {
-                            currentStep = 2
-                        }
-                    }
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(Color("primary"))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(Color.white)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 28)
-                            .stroke(Color("primary"), lineWidth: 2)
-                    )
-                    .cornerRadius(28)
-                    
-                    Button("Create Community") {
-                        viewModel.createCommunitySync()
-                    }
+            }
+            
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .font(.footnote)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+            }
+            
+            Spacer()
+            
+            Button(action: {
+                onComplete()
+            }) {
+                Text("Done")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(Color("primary"))
-                    .cornerRadius(28)
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
+                    .frame(height: 50)
+                    .background(viewModel.createdCommunityID != nil ? Color("primary1") : Color.gray)
+                    .cornerRadius(25)
             }
+            .disabled(viewModel.createdCommunityID == nil)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
         }
-    }
-    
-    private func shareInvite() {
-        let shareText = "Join our community on LevelUp!\nInvite Code: \(viewModel.inviteCode)\nLink: \(viewModel.inviteLink)"
-        let activityVC = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
-        
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            rootVC.present(activityVC, animated: true)
+        .onAppear {
+            if viewModel.generatedInviteCode == nil {
+                Task {
+                    await viewModel.createCommunity()
+                }
+            }
         }
     }
 }
 
-// MARK: - Custom Components
-struct PermissionOption: View {
-    let isSelected: Bool
+// MARK: - Helper Components
+struct PermissionSection: View {
     let title: String
+    let options: [String]
+    let selectedIndex: Int
+    let onSelect: (Int) -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.system(size: 18, weight: .semibold))
+            
+            ForEach(0..<options.count, id: \.self) { index in
+                RadioButton(
+                    title: options[index],
+                    isSelected: selectedIndex == index,
+                    action: { onSelect(index) }
+                )
+            }
+        }
+    }
+}
+
+struct RadioButton: View {
+    let title: String
+    let isSelected: Bool
     let action: () -> Void
     
     var body: some View {
@@ -500,7 +357,7 @@ struct PermissionOption: View {
             HStack(spacing: 12) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 24))
-                    .foregroundColor(isSelected ? Color("primary") : Color.gray.opacity(0.3))
+                    .foregroundColor(isSelected ? Color("primary1") : .gray)
                 
                 Text(title)
                     .font(.system(size: 16))
@@ -509,12 +366,33 @@ struct PermissionOption: View {
                 Spacer()
             }
         }
-        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct CheckboxRow: View {
+    let title: String
+    @Binding var isChecked: Bool
+    
+    var body: some View {
+        Button(action: {
+            isChecked.toggle()
+        }) {
+            HStack(spacing: 12) {
+                Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 24))
+                    .foregroundColor(isChecked ? Color("primary1") : .gray)
+                
+                Text(title)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primary)
+                
+                Spacer()
+            }
+        }
     }
 }
 
 #Preview {
-    NavigationStack {
-        CreateCommunityView()
-    }
+    CreateCommunityView()
+        .environmentObject(AppSession())
 }

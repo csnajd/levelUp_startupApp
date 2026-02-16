@@ -1,93 +1,96 @@
-//
-//  manViewModel.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 02/02/2026.
-//
-
 import Foundation
-internal import Combine
 import CloudKit
+internal import Combine
 
 @MainActor
-class manViewModel: ObservableObject {
+final class manViewModel: ObservableObject {
     @Published var meetings: [Meeting] = []
     @Published var isLoading = false
-    @Published var communityID: String = "" // Set this when community is selected
+    @Published var errorMessage: String?
+    @Published var communityID: String = ""
     
-    private let cloudKitService = Cloudkit.shared // ✅ Uses your Cloudkit class
+    private let cloudKitService = CloudKitService.shared
     
     init() {
-        loadMeetings()
+        // Initial setup
     }
     
-    func loadMeetings() {
-        // Start with empty meetings for new communities
-        meetings = MeetingData.emptyMeetings
-        
-        // Uncomment when you have a community selected
-        // Task {
-        //     await fetchMeetingsFromCloudKit()
-        // }
-    }
-    
-    func fetchMeetingsFromCloudKit() async {
+    func loadMeetings() async {
         guard !communityID.isEmpty else {
-            print("No community ID set")
+            print("⚠️ No community ID set")
             return
         }
         
         isLoading = true
+        errorMessage = nil
         
         do {
             meetings = try await cloudKitService.fetchCommunityMeetings(communityID: communityID)
             isLoading = false
+            print("✅ Loaded \(meetings.count) meetings")
         } catch {
-            print("Error loading meetings: \(error)")
+            errorMessage = error.localizedDescription
             isLoading = false
             meetings = []
+            print("❌ Error loading meetings: \(error)")
         }
     }
     
     func addMeeting(_ meeting: Meeting) {
         meetings.append(meeting)
         
-        // Save to CloudKit
         Task {
             do {
-                _ = try await cloudKitService.saveMeeting(meeting)
-                print("✅ Meeting saved to CloudKit: \(meeting.name)")
+                let savedMeeting = try await cloudKitService.saveMeeting(meeting)
+                
+                if let index = meetings.firstIndex(where: { $0.id == meeting.id }) {
+                    meetings[index] = savedMeeting
+                }
+                
+                print("✅ Meeting saved: \(meeting.name)")
             } catch {
-                print("❌ Error saving meeting to CloudKit: \(error)")
+                meetings.removeAll { $0.id == meeting.id }
+                errorMessage = error.localizedDescription
+                print("❌ Error saving meeting: \(error)")
             }
         }
     }
     
     func updateMeeting(_ meeting: Meeting) {
-        guard let index = meetings.firstIndex(where: { $0.id == meeting.id }) else { return }
+        guard let index = meetings.firstIndex(where: { $0.id == meeting.id }) else {
+            print("⚠️ Meeting not found")
+            return
+        }
+        
         meetings[index] = meeting
         
-        // Update in CloudKit
         Task {
             do {
-                _ = try await cloudKitService.updateMeeting(meeting)
-                print("✅ Meeting updated in CloudKit: \(meeting.name)")
+                let updatedMeeting = try await cloudKitService.updateMeeting(meeting)
+                meetings[index] = updatedMeeting
+                print("✅ Meeting updated: \(meeting.name)")
             } catch {
-                print("❌ Error updating meeting in CloudKit: \(error)")
+                await loadMeetings()
+                errorMessage = error.localizedDescription
+                print("❌ Error updating meeting: \(error)")
             }
         }
     }
     
     func deleteMeeting(_ meetingID: String) {
+        let removedMeeting = meetings.first { $0.id.uuidString == meetingID }
         meetings.removeAll { $0.id.uuidString == meetingID }
         
-        // Delete from CloudKit
         Task {
             do {
                 try await cloudKitService.deleteMeeting(meetingID)
-                print("✅ Meeting deleted from CloudKit")
+                print("✅ Meeting deleted")
             } catch {
-                print("❌ Error deleting meeting from CloudKit: \(error)")
+                if let meeting = removedMeeting {
+                    meetings.append(meeting)
+                }
+                errorMessage = error.localizedDescription
+                print("❌ Error deleting meeting: \(error)")
             }
         }
     }
@@ -95,11 +98,9 @@ class manViewModel: ObservableObject {
     func setCommunity(_ id: String) {
         self.communityID = id
         Task {
-            await fetchMeetingsFromCloudKit()
+            await loadMeetings()
         }
     }
-    
-    // MARK: - Computed Properties
     
     var todayMeetings: [Meeting] {
         meetings.filter { $0.isToday }.sorted { $0.dateTime < $1.dateTime }

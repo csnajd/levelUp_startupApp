@@ -6,11 +6,8 @@ struct levelUp_startupAppApp: App {
 
     var body: some Scene {
         WindowGroup {
-
-
-            WelcomeView() // إذا شاشتك WelcomeView بدليها
+            LogInView()
                 .environmentObject(session)
- 
         }
     }
 }

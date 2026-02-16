@@ -33,7 +33,7 @@ struct manView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Color("primary"))
+                    .background(Color("primary1"))
                     .cornerRadius(20)
                 }
             }
@@ -136,7 +136,7 @@ struct MeetingCard: View {
                 VStack(spacing: 2) {
                     Image(systemName: "calendar")
                         .font(.system(size: 24))
-                        .foregroundColor(Color("primary"))
+                        .foregroundColor(Color("primary1"))
                 }
                 .frame(width: 40)
                 
@@ -147,7 +147,7 @@ struct MeetingCard: View {
                     
                     Text("\(meeting.formattedDate) - \(meeting.formattedTime)")
                         .font(.system(size: 14))
-                        .foregroundColor(Color("primary"))
+                        .foregroundColor(Color("primary1"))
                     
                     Text("\(meeting.platform) | \(meeting.projectName)")
                         .font(.system(size: 12))
@@ -162,7 +162,7 @@ struct MeetingCard: View {
                 }) {
                     Image(systemName: "ellipsis")
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(Color("primary"))
+                        .foregroundColor(Color("primary1"))
                         .frame(width: 32, height: 32)
                 }
                 
@@ -175,7 +175,7 @@ struct MeetingCard: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 8)
-                        .background(Color("primary"))
+                        .background(Color("primary1"))
                         .cornerRadius(16)
                 }
             }
@@ -187,7 +187,7 @@ struct MeetingCard: View {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
                         .font(.system(size: 14))
-                        .foregroundColor(Color("primary"))
+                        .foregroundColor(Color("primary1"))
                     
                     Text("\(meeting.attendeeCount) attendees")
                         .font(.system(size: 14))
@@ -308,7 +308,7 @@ struct EditMeetingSheet: View {
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                     }
                     .padding(.horizontal, 24)
@@ -343,14 +343,14 @@ struct EditMeetingSheet: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 6)
-                                    .background(Color("primary"))
+                                    .background(Color("primary1"))
                                     .cornerRadius(16)
                             }
                             .padding()
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                         }
                     }
@@ -366,7 +366,7 @@ struct EditMeetingSheet: View {
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                             .keyboardType(.URL)
                             .autocapitalization(.none)
@@ -389,7 +389,7 @@ struct EditMeetingSheet: View {
                                     HStack(spacing: -10) {
                                         ForEach(0..<min(selectedAttendees.count, 3), id: \.self) { _ in
                                             Circle()
-                                                .fill(Color("primary"))
+                                                .fill(Color("primary1"))
                                                 .frame(width: 28, height: 28)
                                                 .overlay(
                                                     Circle()
@@ -412,14 +412,14 @@ struct EditMeetingSheet: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 6)
-                                    .background(Color("primary"))
+                                    .background(Color("primary1"))
                                     .cornerRadius(16)
                             }
                             .padding()
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                         }
                     }
@@ -437,7 +437,7 @@ struct EditMeetingSheet: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(Color("primary"))
+                        .background(Color("primary1"))
                         .cornerRadius(28)
                 }
                 .padding(.horizontal, 24)
@@ -450,7 +450,7 @@ struct EditMeetingSheet: View {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .foregroundColor(Color("primary"))
+                    .foregroundColor(Color("primary1"))
                 }
             }
             .sheet(isPresented: $showPlatformPicker) {
@@ -562,7 +562,7 @@ struct AttendeesListSheet: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(Color("primary"))
+                    .foregroundColor(Color("primary1"))
                 }
             }
         }

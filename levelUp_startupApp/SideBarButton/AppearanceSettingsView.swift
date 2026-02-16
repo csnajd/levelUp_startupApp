@@ -54,7 +54,7 @@ struct AppearanceSettingsView: View {
                                     HStack {
                                         Image(systemName: themeIcon(for: theme))
                                             .font(.system(size: 20))
-                                            .foregroundColor(Color("primary"))
+                                            .foregroundColor(Color("primary1"))
                                             .frame(width: 30)
                                         
                                         Text(theme)
@@ -65,7 +65,7 @@ struct AppearanceSettingsView: View {
                                         
                                         if selectedTheme == theme {
                                             Image(systemName: "checkmark.circle.fill")
-                                                .foregroundColor(Color("primary"))
+                                                .foregroundColor(Color("primary1"))
                                         }
                                     }
                                     .padding(16)

@@ -54,7 +54,7 @@ struct CreateMeetingView: View {
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                     }
                     .padding(.horizontal, 24)
@@ -78,14 +78,14 @@ struct CreateMeetingView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 6)
-                                    .background(Color("primary"))
+                                    .background(Color("primary1"))
                                     .cornerRadius(16)
                             }
                             .padding()
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                         }
                     }
@@ -107,7 +107,7 @@ struct CreateMeetingView: View {
                                     HStack(spacing: -10) {
                                         ForEach(0..<min(selectedAttendees.count, 3), id: \.self) { _ in
                                             Circle()
-                                                .fill(Color("primary"))
+                                                .fill(Color("primary1"))
                                                 .frame(width: 28, height: 28)
                                                 .overlay(
                                                     Circle()
@@ -130,14 +130,14 @@ struct CreateMeetingView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 6)
-                                    .background(Color("primary"))
+                                    .background(Color("primary1"))
                                     .cornerRadius(16)
                             }
                             .padding()
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                         }
                     }
@@ -162,14 +162,14 @@ struct CreateMeetingView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 6)
-                                    .background(Color("primary"))
+                                    .background(Color("primary1"))
                                     .cornerRadius(16)
                             }
                             .padding()
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                         }
                     }
@@ -194,14 +194,14 @@ struct CreateMeetingView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 6)
-                                    .background(Color("primary"))
+                                    .background(Color("primary1"))
                                     .cornerRadius(16)
                             }
                             .padding()
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                         }
                     }
@@ -217,7 +217,7 @@ struct CreateMeetingView: View {
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color("primary"), lineWidth: 2)
+                                    .stroke(Color("primary1"), lineWidth: 2)
                             )
                             .keyboardType(.URL)
                             .autocapitalization(.none)
@@ -233,7 +233,7 @@ struct CreateMeetingView: View {
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(isFormValid ? Color("primary") : Color.gray)
+                            .background(isFormValid ? Color("primary1") : Color.gray)
                             .cornerRadius(28)
                     }
                     .disabled(!isFormValid)
@@ -314,11 +314,11 @@ struct ProjectPickerView: View {
                 }) {
                     HStack {
                         Text(project)
-                            .foregroundColor(project == "Not related to any project" ? .gray : .primary)
+                            .foregroundColor(project == "Not related to any project" ? .gray : .primary1)
                         Spacer()
                         if selectedProject == project {
                             Image(systemName: "checkmark")
-                                .foregroundColor(Color("primary"))
+                                .foregroundColor(Color("primary1"))
                         }
                     }
                 }
@@ -328,14 +328,13 @@ struct ProjectPickerView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") { dismiss() }
-                        .foregroundColor(Color("primary"))
+                        .foregroundColor(Color("primary1"))
                 }
             }
         }
     }
 }
-
-// ✅ UPDATED - Attendee Picker with CloudKit Integration
+// ✅ FIXED - Attendee Picker with CloudKit Integration
 struct AttendeePickerView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedAttendees: [String]
@@ -345,7 +344,7 @@ struct AttendeePickerView: View {
     @State private var errorMessage: String?
     
     var communityID: String
-    private let cloudKitService = CloudKitServices.shared
+    private let cloudKitService = CloudKitService.shared  // ✅ ADD THIS LINE
     
     var body: some View {
         NavigationStack {
@@ -376,7 +375,7 @@ struct AttendeePickerView: View {
                             }
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(Color("primary"))
+                        .tint(Color("primary1"))
                     }
                     .padding()
                 } else if communityMembers.isEmpty {
@@ -407,12 +406,12 @@ struct AttendeePickerView: View {
                                             .clipShape(Circle())
                                     } else {
                                         Circle()
-                                            .fill(Color("primary").opacity(0.2))
+                                            .fill(Color("primary1").opacity(0.2))
                                             .frame(width: 40, height: 40)
                                             .overlay(
                                                 Text(member.givenName.prefix(1).uppercased())
                                                     .font(.system(size: 16, weight: .semibold))
-                                                    .foregroundColor(Color("primary"))
+                                                    .foregroundColor(Color("primary1"))
                                             )
                                     }
                                     
@@ -433,7 +432,7 @@ struct AttendeePickerView: View {
                                     
                                     if selectedAttendees.contains(member.id) {
                                         Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(Color("primary"))
+                                            .foregroundColor(Color("primary1"))
                                             .font(.system(size: 24))
                                     } else {
                                         Image(systemName: "circle")
@@ -458,7 +457,7 @@ struct AttendeePickerView: View {
                                         selectedAttendees.removeAll()
                                     }
                                     .font(.subheadline)
-                                    .foregroundColor(Color("primary"))
+                                    .foregroundColor(Color("primary1"))
                                 }
                             }
                         }
@@ -474,7 +473,7 @@ struct AttendeePickerView: View {
                             selectedAttendees = communityMembers.map { $0.id }
                         }
                         .font(.subheadline)
-                        .foregroundColor(Color("primary"))
+                        .foregroundColor(Color("primary1"))
                     }
                 }
                 
@@ -482,7 +481,7 @@ struct AttendeePickerView: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(Color("primary"))
+                    .foregroundColor(Color("primary1"))
                     .fontWeight(.semibold)
                 }
             }
@@ -559,7 +558,7 @@ struct PlatformPickerView: View {
                         Spacer()
                         if selectedPlatform == platform {
                             Image(systemName: "checkmark")
-                                .foregroundColor(Color("primary"))
+                                .foregroundColor(Color("primary1"))
                         }
                     }
                 }

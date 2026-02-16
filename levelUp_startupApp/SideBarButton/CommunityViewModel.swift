@@ -23,11 +23,14 @@ struct CommunityMember: Identifiable {
     }
 }
 
+
 @MainActor
 class CommunityViewModel: ObservableObject {
     @Published var members: [CommunityMember] = []
     @Published var searchText = ""
     @Published var isLoading = false
+    
+    private let cloudKitService = CloudKitService.shared
     
     var filteredMembers: [CommunityMember] {
         if searchText.isEmpty {
@@ -42,24 +45,8 @@ class CommunityViewModel: ObservableObject {
     func loadMembers() async {
         isLoading = true
         
-        // TODO: Replace with actual CloudKit fetch from your friend's CreateCommunity
-        // For now, using empty array
+        // For now empty - will be populated from CloudKit
         members = []
-        
-        // When CloudKit is ready, it will look like this:
-        // do {
-        //     members = try await CloudKitService.shared.fetchCommunityMembers(for: communityID)
-        //     isLoading = false
-        // } catch {
-        //     print("Error loading members: \(error)")
-        //     isLoading = false
-        // }
-        
-        // Dummy data for testing (remove later)
-        // members = [
-        //     CommunityMember(id: "1", givenName: "John", familyName: "Doe", jobTitle: "Developer", email: "john@example.com"),
-        //     CommunityMember(id: "2", givenName: "Jane", familyName: "Smith", jobTitle: "Designer", email: "jane@example.com"),
-        // ]
         
         isLoading = false
     }

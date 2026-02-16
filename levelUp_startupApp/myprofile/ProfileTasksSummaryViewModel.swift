@@ -1,9 +1,8 @@
 import Foundation
-internal import  Combine
+internal import Combine
 
 @MainActor
 final class ProfileTasksSummaryViewModel: ObservableObject {
-
     enum Filter: String, CaseIterable, Identifiable {
         case all, urgent, high, medium, low
         var id: String { rawValue }
@@ -21,15 +20,13 @@ final class ProfileTasksSummaryViewModel: ObservableObject {
 
     @Published var isLoading = false
     @Published var errorMessage: String?
-
     @Published var displayName: String
     @Published var ownerUserID: String
-
     @Published var tasks: [AppTask] = []
     @Published var selectedFilter: Filter = .all
     @Published var expandedTaskIDs: Set<String> = []
 
-    private let service = CloudKitTasksService()
+    private let cloudKitService = CloudKitService.shared
 
     init(ownerUserID: String, displayName: String = "Hey") {
         self.ownerUserID = ownerUserID
@@ -40,7 +37,7 @@ final class ProfileTasksSummaryViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         do {
-            tasks = try await service.fetchTasks(ownerUserID: ownerUserID)
+            tasks = try await cloudKitService.fetchTasks(ownerUserID: ownerUserID)
         } catch {
             errorMessage = error.localizedDescription
         }

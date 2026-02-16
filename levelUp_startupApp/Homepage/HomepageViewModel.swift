@@ -1,50 +1,75 @@
-//
-//  HomepageViewModel.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 02/02/2026.
-//
-
 import Foundation
 internal import Combine
 
 @MainActor
-class HomepageViewModel: ObservableObject {
+final class HomepageViewModel: ObservableObject {
     @Published var projects: [Project] = []
     @Published var communityName = "My Community"
+    @Published var currentCommunity: Community?
     @Published var showBlockedProjects = false
     @Published var isLoadingProjects = false
-    @Published var currentCommunity: Community?
+    @Published var isLoadingCommunity = false
+    @Published var errorMessage: String?
     
-    private let cloudKitService = CloudKitServices.shared
+    private let cloudKitService = CloudKitService.shared
     
     init() {
-        loadProjects()
         Task {
-            await loadCommunityName()
+            await loadInitialData()
         }
     }
     
-    func loadProjects() {
-        projects = ProjectData.emptyProjects
+    func loadInitialData() async {
+        await loadCommunityName()
+        
+        if let communityID = currentCommunity?.id {
+            await loadProjects(communityID: communityID)
+        }
     }
     
     func loadCommunityName() async {
+        isLoadingCommunity = true
+        errorMessage = nil
+        
         do {
             let communities = try await cloudKitService.fetchUserCommunities()
             
             if let firstCommunity = communities.first {
-                communityName = firstCommunity.name
                 currentCommunity = firstCommunity
+                communityName = firstCommunity.name
                 print("✅ Loaded community: \(firstCommunity.name)")
             } else {
                 communityName = "No Community"
                 print("⚠️ No communities found for user")
             }
+            
+            isLoadingCommunity = false
         } catch {
-            communityName = "My Community"
+            communityName = "Error Loading"
+            errorMessage = "Failed to load community: \(error.localizedDescription)"
+            isLoadingCommunity = false
             print("❌ Error loading community: \(error)")
         }
+    }
+    
+    func loadProjects(communityID: String) async {
+        isLoadingProjects = true
+        errorMessage = nil
+        
+        do {
+            projects = try await cloudKitService.fetchCommunityProjects(communityID: communityID)
+            isLoadingProjects = false
+            print("✅ Loaded \(projects.count) projects")
+        } catch {
+            errorMessage = "Failed to load projects: \(error.localizedDescription)"
+            isLoadingProjects = false
+            projects = []
+            print("❌ Error loading projects: \(error)")
+        }
+    }
+    
+    func refresh() async {
+        await loadInitialData()
     }
     
     var activeProjects: [Project] {

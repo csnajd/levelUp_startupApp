@@ -144,7 +144,7 @@ struct NotificationToggle: View {
             Spacer()
             
             Toggle("", isOn: $isOn)
-                .tint(Color("primary"))
+                .tint(Color("primary1"))
         }
         .padding(16)
     }

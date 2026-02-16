@@ -1,11 +1,3 @@
-//
-//  EditProfileViewModel.swift
-//  levelUp_startupApp
-//
-//  Created by Ghala Alsalem on 12/02/2026.
-//
-
-
 import Foundation
 import SwiftUI
 import PhotosUI
@@ -25,7 +17,7 @@ class EditProfileViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var savedSuccessfully = false
     
-    private let cloudKitService = Cloudkit.shared
+    private let cloudKitService = CloudKitService.shared  // ✅ FIXED: Changed from Cloudkit.shared
     
     var isSaveButtonEnabled: Bool {
         true  // Always enabled for editing

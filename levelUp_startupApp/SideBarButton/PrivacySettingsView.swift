@@ -117,7 +117,7 @@ struct PrivacySettingsView: View {
                             }) {
                                 HStack {
                                     Image(systemName: "arrow.down.circle")
-                                        .foregroundColor(Color("primary"))
+                                        .foregroundColor(Color("primary1"))
                                     Text("Download My Data")
                                         .foregroundColor(.black)
                                     Spacer()

@@ -1,19 +1,3 @@
-//
-//  ViewProfileViewModel.swift
-//  levelUp_startupApp
-//
-//  Created by Ghala Alsalem on 10/02/2026.
-//
-
-
-//
-//  profileViewModel.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 02/02/2026.
-//
-
-
 import Foundation
 import SwiftUI
 import PhotosUI
@@ -33,10 +17,10 @@ class EdietprofileViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var savedSuccessfully = false
     
-    private let cloudKitService = CloudKitServices.shared
+    private let cloudKitService = CloudKitService.shared
     
     var isSaveButtonEnabled: Bool {
-        !givenName.isEmpty && !familyName.isEmpty && !email.isEmpty  // ✅ FIXED - Added email check
+        !givenName.isEmpty && !familyName.isEmpty && !email.isEmpty
     }
     
     func saveProfile() async {
@@ -59,7 +43,7 @@ class EdietprofileViewModel: ObservableObject {
                 familyName: familyName,
                 gender: gender,
                 email: email,
-                phoneNumber: phoneNumber,  // ✅ Include phone number
+                phoneNumber: phoneNumber,
                 appleUserID: appleUserID
             )
             user.profileImage = profileImage

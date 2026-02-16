@@ -5,11 +5,11 @@ import CloudKit
 
 @MainActor
 class LogInViewModel: ObservableObject {
-
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var shouldNavigateToWelcome: Bool = false
 
-    private let cloudkit = Cloudkit.shared
+    private let cloudKitService = CloudKitService.shared
 
     func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         request.requestedScopes = [.fullName, .email]
@@ -33,36 +33,31 @@ class LogInViewModel: ObservableObject {
     }
 
     private func handleAppleCredential(_ credential: ASAuthorizationAppleIDCredential, session: AppSession) async {
-
         let userID = credential.user
         let email = credential.email ?? ""
         let givenName = credential.fullName?.givenName ?? ""
         let familyName = credential.fullName?.familyName ?? ""
 
-        // ✅ Save to session first
         session.saveUserID(userID)
         session.givenName = givenName
         session.familyName = familyName
         session.email = email
 
-        // ✅ SAVE TO CLOUDKIT
         do {
-            var user = User(
+            let user = User(
                 givenName: givenName,
                 familyName: familyName,
                 email: email,
                 appleUserID: userID
             )
-            
-            _ = try await cloudkit.saveUserProfile(user)
+            _ = try await cloudKitService.saveUserProfile(user)
             print("✅ Profile saved to CloudKit successfully")
-            
         } catch {
             print("⚠️ CloudKit save failed:", error.localizedDescription)
-            // Don't block login if CloudKit fails
         }
 
         isLoading = false
+        shouldNavigateToWelcome = true  // ✅ Navigate to WelcomeView
     }
 
     private func fail(with message: String) {
