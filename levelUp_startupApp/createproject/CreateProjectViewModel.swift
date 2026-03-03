@@ -17,7 +17,7 @@ final class CreateProjectViewModel: ObservableObject {
     @Published var projectCreated: Bool = false
 
     private let cloudService = CloudKitService.shared
-    private let communityID: String
+     let communityID: String
     private let currentUserID: String
 
     init(communityID: String, currentUserID: String) {
@@ -38,7 +38,7 @@ final class CreateProjectViewModel: ObservableObject {
         let t = tasks[currentTaskIndex]
         return !t.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !t.assignedUserIDs.isEmpty
-            && t.startDate < t.endDate
+            && t.endDate > t.startDate
     }
 
     func nextStep() {
@@ -49,7 +49,7 @@ final class CreateProjectViewModel: ObservableObject {
                     priority: .medium,
                     assignedUserIDs: [],
                     startDate: startDate,
-                    endDate: endDate
+                    endDate: endDate > startDate ? endDate : startDate.addingTimeInterval(3600)
                 )
             }
             currentStep = 2

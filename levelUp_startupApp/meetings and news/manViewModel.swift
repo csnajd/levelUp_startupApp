@@ -10,9 +10,11 @@ final class manViewModel: ObservableObject {
     @Published var communityID: String = ""
     
     private let cloudKitService = CloudKitService.shared
-    
-    init() {
-        // Initial setup
+    init(communityID: String) {
+        self.communityID = communityID
+        Task {
+            await loadMeetings()
+        }
     }
     
     func loadMeetings() async {

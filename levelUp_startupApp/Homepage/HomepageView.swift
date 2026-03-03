@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HomepageView: View {
-    @StateObject private var viewModel = HomepageViewModel()
+    @StateObject private var viewModel: HomepageViewModel
     @State private var showMenu = false
     @State private var selectedTab = 0
 
@@ -18,10 +18,14 @@ struct HomepageView: View {
   
      let communityName: String
 
-     init(communityID: String, communityName: String = "Home") {
-         self.communityID = communityID
-         self.communityName = communityName
-     }
+    init(communityID: String, communityName: String = "Home") {
+        self.communityID = communityID
+        self.communityName = communityName
+        _viewModel = StateObject(wrappedValue: HomepageViewModel(
+            communityID: communityID,
+            communityName: communityName
+        ))
+    }
     var body: some View {
         NavigationStack {
             ZStack {
@@ -190,7 +194,7 @@ struct HomepageView: View {
                         }
 
                         if selectedTab == 1 {
-                            manView()
+                            manView(communityID: communityID)
                         }
 
                         if selectedTab == 2 {
@@ -241,7 +245,9 @@ struct HomepageView: View {
             }
             .navigationBarHidden(true)
             // ✅ sheet لازم يكون خارج الزر عشان يشتغل دايم
-            .sheet(isPresented: $showCreateProjectSheet) {
+            .sheet(isPresented: $showCreateProjectSheet, onDismiss: {
+                Task { await viewModel.loadProjects() }
+            }) {
                 CreateProjectView(
                     communityID: communityID,
                     currentUserID: session.appleUserID ?? ""
@@ -372,9 +378,7 @@ struct ProjectCard: View {
     let project: Project
 
     var body: some View {
-        Button(action: {
-            // TODO: Navigate to project details
-        }) {
+        NavigationLink(destination: ProjectDetailView(project: project)) {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(project.name)

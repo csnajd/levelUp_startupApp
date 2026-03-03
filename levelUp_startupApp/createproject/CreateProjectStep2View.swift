@@ -63,7 +63,7 @@ struct CreateProjectStep2View: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.black)
 
-                NavigationLink(destination: UserSelectionView(selectedUserIDs: $viewModel.selectedUserIDs)) {
+                NavigationLink(destination: UserSelectionView(communityID: viewModel.communityID, selectedUserIDs: $viewModel.selectedUserIDs)) {
                     HStack {
                         if viewModel.selectedUserIDs.isEmpty {
                             Image(systemName: "person.circle.fill")

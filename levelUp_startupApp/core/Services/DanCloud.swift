@@ -90,41 +90,37 @@ final class CloudKitService {
     
     // MARK: - Community Operations
     
+    // saveCommunity
     func saveCommunity(_ community: Community) async throws -> Community {
         let record = community.toCKRecord()
-        let savedRecord = try await privateDatabase.save(record)
-        
+        let savedRecord = try await publicDatabase.save(record) // ✅ public
         guard let savedCommunity = Community(from: savedRecord) else {
             throw NSError(domain: "CloudKitService", code: -1,
                          userInfo: [NSLocalizedDescriptionKey: "Failed to create community from saved record"])
         }
-        
         return savedCommunity
     }
-    
+
+    // updateCommunity
     func updateCommunity(_ community: Community) async throws -> Community {
         let record = community.toCKRecord()
-        let savedRecord = try await privateDatabase.save(record)
-        
+        let savedRecord = try await publicDatabase.save(record) // ✅ public
         guard let updatedCommunity = Community(from: savedRecord) else {
             throw NSError(domain: "CloudKitService", code: -1,
                          userInfo: [NSLocalizedDescriptionKey: "Failed to create community from saved record"])
         }
-        
         return updatedCommunity
     }
-    
+
+    // fetchUserCommunities
     func fetchUserCommunities() async throws -> [Community] {
         guard let userID = try await getCurrentUserID() else {
             throw NSError(domain: "CloudKitService", code: -1,
                          userInfo: [NSLocalizedDescriptionKey: "Could not get user ID"])
         }
-        
         let predicate = NSPredicate(format: "memberIDs CONTAINS %@", userID)
         let query = CKQuery(recordType: "Community", predicate: predicate)
-        
-        let (results, _) = try await privateDatabase.records(matching: query)
-        
+        let (results, _) = try await publicDatabase.records(matching: query) // ✅ public
         var communities: [Community] = []
         for (_, result) in results {
             switch result {
@@ -136,28 +132,26 @@ final class CloudKitService {
                 print("Error fetching community: \(error)")
             }
         }
-        
         return communities.sorted { $0.createdAt > $1.createdAt }
     }
-    
+
+    // fetchCommunityByID
     func fetchCommunityByID(_ communityID: String) async throws -> Community? {
         let recordID = CKRecord.ID(recordName: communityID)
-        
         do {
-            let record = try await privateDatabase.record(for: recordID)
+            let record = try await publicDatabase.record(for: recordID) // ✅ public
             return Community(from: record)
         } catch {
             print("Error fetching community by ID: \(error)")
             throw error
         }
     }
-    
+
+    // findCommunityByInviteCode
     func findCommunityByInviteCode(_ code: String) async throws -> Community? {
         let predicate = NSPredicate(format: "inviteCode == %@", code)
         let query = CKQuery(recordType: "Community", predicate: predicate)
-        
-        let (results, _) = try await privateDatabase.records(matching: query, desiredKeys: nil)
-        
+        let (results, _) = try await publicDatabase.records(matching: query, desiredKeys: nil) // ✅ public
         for (_, result) in results {
             switch result {
             case .success(let record):
@@ -166,32 +160,28 @@ final class CloudKitService {
                 throw error
             }
         }
-        
         return nil
     }
-    
+
+    // deleteCommunity
     func deleteCommunity(_ communityID: String) async throws {
         let recordID = CKRecord.ID(recordName: communityID)
-        try await privateDatabase.deleteRecord(withID: recordID)
+        try await publicDatabase.deleteRecord(withID: recordID) // ✅ public
     }
-    
+
+    // fetchCommunityMembers
     func fetchCommunityMembers(communityID: String) async throws -> [User] {
         let communityRecordID = CKRecord.ID(recordName: communityID)
-        let communityRecord = try await publicDatabase.record(for: communityRecordID)
-        
+        let communityRecord = try await publicDatabase.record(for: communityRecordID) // ✅ public
         guard let community = Community(from: communityRecord) else {
             throw NSError(domain: "CloudKitService", code: -1,
                          userInfo: [NSLocalizedDescriptionKey: "Could not parse community"])
         }
-        
         var members: [User] = []
-        
         for memberID in community.memberIDs {
             let userPredicate = NSPredicate(format: "appleUserID == %@", memberID)
             let userQuery = CKQuery(recordType: "UserProfile", predicate: userPredicate)
-            
             let (userResults, _) = try await publicDatabase.records(matching: userQuery)
-            
             for (_, userResult) in userResults {
                 switch userResult {
                 case .success(let record):
@@ -203,7 +193,6 @@ final class CloudKitService {
                 }
             }
         }
-        
         return members.sorted { $0.fullName < $1.fullName }
     }
     
@@ -377,8 +366,7 @@ final class CloudKitService {
     
     func fetchCommunityMeetings(communityID: String) async throws -> [Meeting] {
         let predicate = NSPredicate(format: "communityID == %@", communityID)
-        let query = CKQuery(recordType: "Meeting", predicate: predicate)
-        
+        let query = CKQuery(recordType: "meeting", predicate: predicate)
         let (results, _) = try await publicDatabase.records(matching: query)
         
         var meetings: [Meeting] = []
@@ -398,7 +386,7 @@ final class CloudKitService {
     
     func fetchProjectMeetings(projectID: String) async throws -> [Meeting] {
         let predicate = NSPredicate(format: "projectID == %@", projectID)
-        let query = CKQuery(recordType: "Meeting", predicate: predicate)
+        let query = CKQuery(recordType: "meeting", predicate: predicate)
         
         let (results, _) = try await publicDatabase.records(matching: query)
         
@@ -419,7 +407,7 @@ final class CloudKitService {
     
     func fetchUserMeetings(userID: String) async throws -> [Meeting] {
         let predicate = NSPredicate(format: "attendeeIDs CONTAINS %@", userID)
-        let query = CKQuery(recordType: "Meeting", predicate: predicate)
+        let query = CKQuery(recordType: "meeting", predicate: predicate)
         
         let (results, _) = try await publicDatabase.records(matching: query)
         

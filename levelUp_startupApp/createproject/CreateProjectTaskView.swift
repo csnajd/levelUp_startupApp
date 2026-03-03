@@ -79,7 +79,7 @@ struct CreateProjectTaskView: View {
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.black)
 
-                        NavigationLink(destination: UserSelectionView(selectedUserIDs: Binding(
+                        NavigationLink(destination: UserSelectionView(communityID: viewModel.communityID, selectedUserIDs: Binding(
                             get: { viewModel.currentTask?.assignedUserIDs ?? [] },
                             set: { viewModel.updateTaskUsers($0) }
                         ))) {
