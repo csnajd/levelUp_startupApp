@@ -10,6 +10,7 @@ final class manViewModel: ObservableObject {
     @Published var communityID: String = ""
     
     private let cloudKitService = CloudKitService.shared
+
     init(communityID: String) {
         self.communityID = communityID
         Task {
@@ -44,11 +45,9 @@ final class manViewModel: ObservableObject {
         Task {
             do {
                 let savedMeeting = try await cloudKitService.saveMeeting(meeting)
-                
                 if let index = meetings.firstIndex(where: { $0.id == meeting.id }) {
                     meetings[index] = savedMeeting
                 }
-                
                 print("✅ Meeting saved: \(meeting.name)")
             } catch {
                 meetings.removeAll { $0.id == meeting.id }
@@ -78,7 +77,33 @@ final class manViewModel: ObservableObject {
             }
         }
     }
-    
+
+    // ✅ FIX Bug 3: cancelMeeting now sets status to .cancelled and updates CloudKit
+    // instead of permanently deleting the record — users will now see "Cancelled" badge
+    func cancelMeeting(_ meetingID: String) {
+        guard let index = meetings.firstIndex(where: { $0.id.uuidString == meetingID }) else {
+            print("⚠️ Meeting not found for cancellation")
+            return
+        }
+
+        var updatedMeeting = meetings[index]
+        updatedMeeting.status = .cancelled
+        meetings[index] = updatedMeeting
+
+        Task {
+            do {
+                let saved = try await cloudKitService.updateMeeting(updatedMeeting)
+                meetings[index] = saved
+                print("✅ Meeting cancelled: \(updatedMeeting.name)")
+            } catch {
+                await loadMeetings()
+                errorMessage = error.localizedDescription
+                print("❌ Error cancelling meeting: \(error)")
+            }
+        }
+    }
+
+    // deleteMeeting kept for any actual hard-delete needs elsewhere
     func deleteMeeting(_ meetingID: String) {
         let removedMeeting = meetings.first { $0.id.uuidString == meetingID }
         meetings.removeAll { $0.id.uuidString == meetingID }
@@ -105,6 +130,7 @@ final class manViewModel: ObservableObject {
     }
     
     var todayMeetings: [Meeting] {
+        // ✅ Cancelled meetings still appear in their section — filtered by isToday only
         meetings.filter { $0.isToday }.sorted { $0.dateTime < $1.dateTime }
     }
     

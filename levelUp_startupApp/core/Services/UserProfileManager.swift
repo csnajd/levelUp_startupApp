@@ -52,11 +52,13 @@ class UserProfileManager: ObservableObject {
                 return
             }
             
+            // ✅ FIX Bug 2: gender.rawValue is now passed so gender changes persist to CloudKit
             try await cloudKitService.upsertUserProfile(
                 appleUserID: appleUserID,
                 email: email.isEmpty ? nil : email,
                 givenName: givenName.isEmpty ? nil : givenName,
-                familyName: familyName.isEmpty ? nil : familyName
+                familyName: familyName.isEmpty ? nil : familyName,
+                gender: gender.rawValue
             )
             
             isLoading = false

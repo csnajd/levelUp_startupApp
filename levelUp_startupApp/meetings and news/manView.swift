@@ -1,15 +1,11 @@
-//
-//  manView.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 02/02/2026.
-//
 import SwiftUI
 
 struct manView: View {
     let communityID: String
     @StateObject private var viewModel: manViewModel
     @State private var showCreateMeeting = false
+    @State private var showTodaySection = true
+    @State private var showUpcomingSection = true
 
     init(communityID: String) {
         self.communityID = communityID
@@ -66,18 +62,28 @@ struct manView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         if viewModel.hasTodayMeetings {
                             VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("Today")
-                                        .font(.system(size: 20, weight: .semibold))
-                                    Image(systemName: "chevron.down")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.gray)
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        showTodaySection.toggle()
+                                    }
+                                }) {
+                                    HStack {
+                                        Text("Today")
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .foregroundColor(.black)
+                                        Image(systemName: showTodaySection ? "chevron.down" : "chevron.right")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(.gray)
+                                    }
                                 }
+                                .buttonStyle(.plain)
                                 .padding(.horizontal, 20)
 
-                                ForEach(viewModel.todayMeetings) { meeting in
-                                    MeetingCard(meeting: meeting, viewModel: viewModel)
-                                        .padding(.horizontal, 20)
+                                if showTodaySection {
+                                    ForEach(viewModel.todayMeetings) { meeting in
+                                        MeetingCard(meeting: meeting, viewModel: viewModel)
+                                            .padding(.horizontal, 20)
+                                    }
                                 }
                             }
                             .padding(.top, 20)
@@ -85,18 +91,28 @@ struct manView: View {
 
                         if viewModel.hasUpcomingMeetings {
                             VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("Upcoming")
-                                        .font(.system(size: 20, weight: .semibold))
-                                    Image(systemName: "chevron.down")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.gray)
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        showUpcomingSection.toggle()
+                                    }
+                                }) {
+                                    HStack {
+                                        Text("Upcoming")
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .foregroundColor(.black)
+                                        Image(systemName: showUpcomingSection ? "chevron.down" : "chevron.right")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(.gray)
+                                    }
                                 }
+                                .buttonStyle(.plain)
                                 .padding(.horizontal, 20)
 
-                                ForEach(viewModel.upcomingMeetings) { meeting in
-                                    MeetingCard(meeting: meeting, viewModel: viewModel)
-                                        .padding(.horizontal, 20)
+                                if showUpcomingSection {
+                                    ForEach(viewModel.upcomingMeetings) { meeting in
+                                        MeetingCard(meeting: meeting, viewModel: viewModel)
+                                            .padding(.horizontal, 20)
+                                    }
                                 }
                             }
                             .padding(.top, 20)
@@ -132,18 +148,30 @@ struct MeetingCard: View {
                 VStack(spacing: 2) {
                     Image(systemName: "calendar")
                         .font(.system(size: 24))
-                        .foregroundColor(Color("primary1"))
+                        .foregroundColor(meeting.isCancelled ? .gray : Color("primary1"))
                 }
                 .frame(width: 40)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(meeting.name)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.black)
+                    HStack(spacing: 8) {
+                        Text(meeting.name)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(meeting.isCancelled ? .gray : .black)
+
+                        if meeting.isCancelled {
+                            Text("Cancelled")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Color.red.opacity(0.8))
+                                .cornerRadius(8)
+                        }
+                    }
 
                     Text("\(meeting.formattedDate) - \(meeting.formattedTime)")
                         .font(.system(size: 14))
-                        .foregroundColor(Color("primary1"))
+                        .foregroundColor(meeting.isCancelled ? .gray : Color("primary1"))
 
                     Text("\(meeting.platform) | \(meeting.projectName)")
                         .font(.system(size: 12))
@@ -152,21 +180,23 @@ struct MeetingCard: View {
 
                 Spacer()
 
-                Button(action: { showMeetingOptions = true }) {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(Color("primary1"))
-                        .frame(width: 32, height: 32)
-                }
+                if !meeting.isCancelled {
+                    Button(action: { showMeetingOptions = true }) {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(Color("primary1"))
+                            .frame(width: 32, height: 32)
+                    }
 
-                Button(action: { openMeetingLink(meeting.link) }) {
-                    Text("Join")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                        .background(Color("primary1"))
-                        .cornerRadius(16)
+                    Button(action: { openMeetingLink(meeting.link) }) {
+                        Text("Join")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 8)
+                            .background(Color("primary1"))
+                            .cornerRadius(16)
+                    }
                 }
             }
 
@@ -174,7 +204,7 @@ struct MeetingCard: View {
                 HStack(spacing: 8) {
                     Image(systemName: "person.2.fill")
                         .font(.system(size: 14))
-                        .foregroundColor(Color("primary1"))
+                        .foregroundColor(meeting.isCancelled ? .gray : Color("primary1"))
                     Text("\(meeting.attendeeCount) attendees")
                         .font(.system(size: 14))
                         .foregroundColor(.gray)
@@ -188,6 +218,7 @@ struct MeetingCard: View {
         .padding(16)
         .background(Color("primary2"))
         .cornerRadius(16)
+        .opacity(meeting.isCancelled ? 0.7 : 1.0)
         .confirmationDialog("Meeting Options", isPresented: $showMeetingOptions, titleVisibility: .hidden) {
             Button(action: { editType = .name; showEditSheet = true }) {
                 Label("Edit Name", systemImage: "pencil")
@@ -226,7 +257,7 @@ struct MeetingCard: View {
     }
 
     private func cancelMeeting() {
-        viewModel.deleteMeeting(meeting.id.uuidString)
+        viewModel.cancelMeeting(meeting.id.uuidString)
     }
 }
 
@@ -474,31 +505,83 @@ struct AttendeesListSheet: View {
 // MARK: - Attendee Row
 struct AttendeeRow: View {
     let attendeeID: String
+    private let cloudKitService = CloudKitService.shared
+
+    @State private var user: User? = nil
+    @State private var isLoading = true
 
     var body: some View {
         HStack(spacing: 16) {
-            Circle()
-                .fill(Color(.systemGray5))
-                .frame(width: 50, height: 50)
-                .overlay(
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(.white)
-                )
-            VStack(alignment: .leading, spacing: 4) {
-                Text("User \(attendeeID)")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(.black)
-                Text("Member")
-                    .font(.system(size: 14))
-                    .foregroundColor(.gray)
+            Group {
+                if let image = user?.profileImage {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                } else {
+                    Circle()
+                        .fill(Color(.systemGray5))
+                        .frame(width: 50, height: 50)
+                        .overlay(
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(.white)
+                        )
+                }
             }
+
+            VStack(alignment: .leading, spacing: 4) {
+                if isLoading {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(.systemGray5))
+                        .frame(width: 120, height: 16)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(.systemGray6))
+                        .frame(width: 80, height: 12)
+                } else if let user = user {
+                    Text(user.fullName)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.black)
+                    if !user.email.isEmpty && user.showEmail {
+                        Text(user.email)
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
+                    } else {
+                        Text("Member")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
+                    }
+                } else {
+                    Text("Unknown Member")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.black)
+                    Text("Member")
+                        .font(.system(size: 14))
+                        .foregroundColor(.gray)
+                }
+            }
+
             Spacer()
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Color("primary2"))
         .cornerRadius(16)
+        .task {
+            await fetchUser()
+        }
+    }
+
+    private func fetchUser() async {
+        isLoading = true
+        do {
+            user = try await cloudKitService.fetchUserProfile(appleUserID: attendeeID)
+        } catch {
+            print("❌ Failed to fetch attendee \(attendeeID): \(error)")
+            user = nil
+        }
+        isLoading = false
     }
 }
 
