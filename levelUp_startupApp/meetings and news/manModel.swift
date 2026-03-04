@@ -1,11 +1,11 @@
-//
-//  manModel.swift
-//  levelUp_startupApp
-//
-//  Created by Danyah ALbarqawi on 02/02/2026.
-//
 import Foundation
 import CloudKit
+
+// ✅ FIX Bug 3: Added MeetingStatus so cancelled meetings stay visible instead of being deleted
+enum MeetingStatus: String {
+    case scheduled = "scheduled"
+    case cancelled = "cancelled"
+}
 
 struct Meeting: Identifiable {
     var id = UUID()
@@ -18,6 +18,8 @@ struct Meeting: Identifiable {
     var link: String
     var communityID: String
     var createdAt: Date
+    // ✅ FIX Bug 3: New status field, defaults to scheduled
+    var status: MeetingStatus = .scheduled
 
     var attendeeCount: Int { attendeeIDs.count }
 
@@ -41,6 +43,8 @@ struct Meeting: Identifiable {
 
     var isToday: Bool { Calendar.current.isDateInToday(dateTime) }
     var isUpcoming: Bool { dateTime > Date() }
+    // ✅ FIX Bug 3: Convenience computed var for UI
+    var isCancelled: Bool { status == .cancelled }
 }
 
 // MARK: - CloudKit Conversion
@@ -67,6 +71,9 @@ extension Meeting {
         self.link = link
         self.communityID = communityID
         self.createdAt = createdAt
+        // ✅ FIX Bug 3: Read status from CloudKit, fall back to scheduled for old records
+        let statusRaw = record["status"] as? String ?? "scheduled"
+        self.status = MeetingStatus(rawValue: statusRaw) ?? .scheduled
     }
 
     func toCKRecord() -> CKRecord {
@@ -82,6 +89,8 @@ extension Meeting {
         record["link"] = link as CKRecordValue
         record["communityID"] = communityID as CKRecordValue
         record["createdAt"] = createdAt as CKRecordValue
+        // ✅ FIX Bug 3: Save status to CloudKit
+        record["status"] = status.rawValue as CKRecordValue
 
         return record
     }

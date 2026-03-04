@@ -49,11 +49,12 @@ struct CreateProjectView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "An error occurred")
             }
-            // ✅ iOS 17+ fixed onChange
             .onChange(of: viewModel.projectCreated) { _, created in
                 if created { dismiss() }
             }
         }
+        // ✅ FIX Bug 1: Prevents accidental swipe-to-dismiss which was deleting the in-progress project
+        .interactiveDismissDisabled()
     }
 
     private var progressBar: some View {
